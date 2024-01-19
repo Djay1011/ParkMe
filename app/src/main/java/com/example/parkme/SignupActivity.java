@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -29,6 +30,12 @@ public class SignupActivity extends AppCompatActivity {
         retypePasswordInput = findViewById(R.id.retypePasswordInput);
 
         findViewById(R.id.signUpButton).setOnClickListener(view -> registerUser());
+        findViewById(R.id.signIn).setOnClickListener(view -> navigateToLogin());
+    }
+
+    private void navigateToLogin() {
+        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+        startActivity(intent);
     }
 
     private void registerUser() {
@@ -57,7 +64,7 @@ public class SignupActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        navigateToMainActivity();
+                        sendEmailVerification();
                     } else {
                         String message = "Registration failed.";
                         if (task.getException() != null) {
@@ -66,6 +73,27 @@ public class SignupActivity extends AppCompatActivity {
                         Toast.makeText(SignupActivity.this, message, Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
+    }
+
+    private void sendEmailVerification() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            user.sendEmailVerification()
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(SignupActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                            navigateToLogin(); // Or another appropriate action
+                        } else {
+                            Toast.makeText(SignupActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
 
     private void navigateToMainActivity() {
