@@ -13,5 +13,6 @@
     <string name="phone_number">Phone Number</string>
     <string name="already_have_an_account_sign_in">Already have an account? Sign In</string>
     <string name="don_t_have_an_account_sign_up">Don’t have an account? Sign Up</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
 </resources>
