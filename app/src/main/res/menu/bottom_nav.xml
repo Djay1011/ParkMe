@@ -11,7 +11,7 @@
         android:title="@string/book"/>
     <item
         android:id="@+id/nav_map"
-        android:title=""/>
+        android:title="@string/map"/>
     <item
         android:id="@+id/nav_notification"
         android:icon="@drawable/ic_notifications"
