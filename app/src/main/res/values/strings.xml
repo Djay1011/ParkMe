@@ -14,5 +14,12 @@
     <string name="already_have_an_account_sign_in">Already have an account? Sign In</string>
     <string name="don_t_have_an_account_sign_up">Don’t have an account? Sign Up</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="search">Search</string>
+    <string name="book">Bookings</string>
+    <string name="notification">Notification</string>
+    <string name="more">More</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_booking_fragment">booking</string>
 
 </resources>

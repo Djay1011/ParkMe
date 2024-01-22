@@ -1,9 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.ParkMe" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.ParkMe" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Customize your light theme here. -->
+        <item name="colorPrimary">#FB6E64</item>
+        <item name="colorPrimaryVariant">#FB6E64</item>
+        <item name="colorOnPrimary">@color/white</item>
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorSecondary">#E6E2E2</item>
+        <item name="colorSecondaryVariant">#E6E2E2</item>
+        <item name="colorOnSecondary">@color/black</item>
     </style>
+
+
 
     <style name="Theme.ParkMe" parent="Base.Theme.ParkMe" />
 </resources>
