@@ -4,4 +4,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="rose">#E3242B</color>
+
+    <color name="dark">#222222</color>
+    <color name="light">#FFFFFF</color>
 </resources>
