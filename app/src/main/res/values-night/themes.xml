@@ -1,18 +1,27 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme for Material 3 -->
     <style name="Base.Theme.ParkMe" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- These items will automatically switch between light/dark variants -->
+        <item name="colorPrimary">@color/dark_blue</item>
+        <item name="colorPrimaryContainer">@color/Lighter_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/dark_green</item>
+        <item name="colorSecondaryContainer">@color/Lighter_green</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <item name="android:colorBackground">@color/dark_grey</item>
+        <item name="colorOnBackground">@color/white</item>
+
+        <item name="colorError">@color/dark_red</item>
+        <item name="colorOnError">@color/white</item>
+
+        <item name="colorSurface">@color/dark</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent</item>
+        <!-- ... other shape appearances ... -->
     </style>
 
-    <style name="Base.Theme.BottomNav" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <item name="colorPrimary">#FB6E64</item>
-        <item name="colorPrimaryVariant">#FB6E64</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
-        <item name="colorSecondary">#FB6E64</item>
-        <item name="colorSecondaryVariant">#FB6E64</item>
-        <item name="colorOnSecondary">@color/black</item>
-    </style>
+    <style name="Theme.ParkMe" parent="Base.Theme.ParkMe" />
 </resources>

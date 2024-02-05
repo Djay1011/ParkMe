@@ -1,32 +1,57 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/round_corners"
+    app:behavior_peekHeight="50dp"
+    app:behavior_hideable="true"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-    <TextView
-        android:id="@+id/greetingText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello, [User's First Name]!"
-        android:textSize="18sp"
-        android:paddingBottom="16dp"/>
-
+    <!-- Card Number Input -->
     <EditText
-        android:id="@+id/searchEditText"
-        android:layout_width="match_parent"
+        android:id="@+id/editTextCardNumber"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Search location"/>
+        android:hint="Card Number"
+        android:inputType="numberDecimal"
+        android:maxLength="16"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/homeButton"
-        android:layout_width="match_parent"
+    <!-- Expiry Date Input -->
+    <EditText
+        android:id="@+id/editTextExpiry"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Home"/>
+        android:hint="Expiry Date"
+        android:inputType="date"
+        app:layout_constraintTop_toBottomOf="@id/editTextCardNumber"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/workButton"
-        android:layout_width="match_parent"
+    <!-- CVV Input -->
+    <EditText
+        android:id="@+id/editTextCvv"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Work"/>
-</LinearLayout>
+        android:hint="cvv"
+        android:inputType="numberDecimal"
+        android:maxLength="3"
+        app:layout_constraintTop_toBottomOf="@id/editTextExpiry"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/buttonSubmit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add Card"
+        app:layout_constraintTop_toBottomOf="@id/editTextCvv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
+

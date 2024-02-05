@@ -3,8 +3,19 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="rose">#E3242B</color>
+    <color name="blue">#1E88E5</color> <!-- Primary blue -->
+    <color name="blueLight">#90CAF9</color> <!-- Lighter blue for containers -->
+    <color name="green">#4CAF50</color> <!-- Secondary green -->
+    <color name="greenLight">#A5D6A7</color> <!-- Lighter green for secondary containers -->
+    <color name="light_grey">#F5F5F5</color> <!-- A light grey for background -->
+    <color name="muted_red">#D32F2F</color> <!-- A muted red for errors -->
+    <color name="off_white">#FAFAFA</color> <!-- An off-white for surfaces -->
 
-    <color name="dark">#222222</color>
-    <color name="light">#FFFFFF</color>
+    <color name="dark_blue">#0D47A1</color> <!-- Darker shade of blue for primary -->
+    <color name="Lighter_blue">#5472D3</color> <!-- Less light shade of blue for primary container -->
+    <color name="dark_green">#2E7D32</color> <!-- Darker shade of green for secondary -->
+    <color name="Lighter_green">#60AD5E</color> <!-- Less light shade of green for secondary container -->
+    <color name="dark_grey">#424242</color> <!-- Darker grey for background -->
+    <color name="dark_red">#B71C1C</color> <!-- Darker red for errors -->
+    <color name="dark">#121212</color> <!-- Very dark (almost black) for surfaces -->
 </resources>

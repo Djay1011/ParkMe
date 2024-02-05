@@ -23,5 +23,6 @@
     <string name="hello_booking_fragment">booking</string>
     <string name="map">Map</string>
     <string name="Vehicle_information">Vehicle Information</string>
+    <string name="add_card">Add Card</string>
 
 </resources>
