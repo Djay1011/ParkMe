@@ -1,64 +1,87 @@
 package com.example.parkme;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+
 public class SearchFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private BottomSheetDialog bottomSheetDialog;
+    private ConstraintLayout addCardLayout;
+    private ConstraintLayout cardDetailsLayout; // This should be ConstraintLayout, not TextView.
+    private TextView cardDetailsTextView; // We need a separate TextView for card details.
+    private ImageView deleteCardButton;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SearchFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(String param1, String param2) {
-        SearchFragment fragment = new SearchFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_search, container, false);
+
+        addCardLayout = view.findViewById(R.id.addCard);
+        cardDetailsLayout = view.findViewById(R.id.cardDetailsLayout); // This is the layout holding the card details.
+        cardDetailsTextView = view.findViewById(R.id.cardDetails); // This is the actual TextView for card details.
+        deleteCardButton = view.findViewById(R.id.deleteCardButton); // Get the delete button.
+
+        addCardLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showBottomSheetDialog();
+            }
+        });
+
+        deleteCardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteCardDetails();
+            }
+        });
+
+        return view;
+    }
+
+    private void showBottomSheetDialog() {
+        if (bottomSheetDialog == null) {
+            View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet, null);
+            bottomSheetDialog = new BottomSheetDialog(requireContext());
+            bottomSheetDialog.setContentView(bottomSheetView);
+
+            Button confirmButton = bottomSheetView.findViewById(R.id.AddCardButton);
+            confirmButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EditText cardNumberEditText = bottomSheetView.findViewById(R.id.cardNumber);
+                    // Validate and process card details
+                    // Update UI with card details
+                    updateCardDetailsUI(cardNumberEditText.getText().toString());
+                    bottomSheetDialog.dismiss();
+                }
+            });
+        }
+        bottomSheetDialog.show();
+    }
+
+    private void updateCardDetailsUI(String cardNumber) {
+        // Extract last four digits and expiry date
+        // For demonstration, using static values
+        String lastFourDigits = cardNumber.length() > 4 ? cardNumber.substring(cardNumber.length() - 4) : cardNumber;
+        cardDetailsTextView.setText("•••• " + lastFourDigits + " Exp: 12/24");
+        cardDetailsLayout.setVisibility(View.VISIBLE); // Make the layout visible.
+    }
+
+    private void deleteCardDetails() {
+        cardDetailsLayout.setVisibility(View.GONE); // Hide the card details layout.
     }
 }
