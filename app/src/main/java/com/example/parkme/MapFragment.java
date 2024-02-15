@@ -5,24 +5,33 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.google.android.gms.maps.SupportMapFragment;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+import java.util.List;
+
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
     private GoogleMap mMap;
 
@@ -31,6 +40,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
+        /*fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);*/
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -41,14 +51,45 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 10));
+        mMap.setOnInfoWindowClickListener(this);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
 
         enableMyLocation();
+        loadParkingSpots(); // Load and display parking spots
     }
+
+
+
+    private void loadParkingSpots() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("parkingSpots").addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                // Handle the error
+                return;
+            }
+            if (snapshots != null && !snapshots.isEmpty()) {
+                updateMapMarkers(snapshots.getDocuments());
+            }
+        });
+    }
+
+    private void updateMapMarkers(List<DocumentSnapshot> documents) {
+        mMap.clear(); // Clear existing markers
+        for (DocumentSnapshot document : documents) {
+            ParkingSpot spot = document.toObject(ParkingSpot.class);
+            if (spot != null) {
+                addMarkerForParkingSpot(spot);
+            }
+        }
+    }
+
+
+    private void addMarkerForParkingSpot(ParkingSpot spot) {
+        LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
+        Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(spot.getName()).snippet("Tap to book"));
+        marker.setTag(spot);
+    }
+
 
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -102,4 +143,39 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
+    @Override
+    public void onInfoWindowClick(@NonNull Marker marker) {
+        ParkingSpot spot = (ParkingSpot) marker.getTag();
+        if (spot != null) {
+            showBottomSheetDialog(spot);
+        }
+    }
+
+    private void showBottomSheetDialog(ParkingSpot spot) {
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getActivity());
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.parkingspot_bottom_sheet, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        TextView tvTitle = bottomSheetView.findViewById(R.id.bottom_sheet_title);
+        TextView tvDetails = bottomSheetView.findViewById(R.id.bottom_sheet_details);
+        ImageView imageView = bottomSheetView.findViewById(R.id.imageParkingSpot);
+        TextView tvPrice = bottomSheetView.findViewById(R.id.tvPrice);
+        TextView tvRating = bottomSheetView.findViewById(R.id.tvRating);
+        Button btnBookNow = bottomSheetView.findViewById(R.id.bottom_sheet_book_now);
+
+        tvTitle.setText(spot.getName());
+        tvDetails.setText(spot.getDetails());
+        tvPrice.setText("Price: $" + spot.getPrice() + "/hour");
+        tvRating.setText("Rating: " + spot.getRating() + " ★");
+
+        // Load image using a library like Glide or Picasso
+        /*Glide.with(this).load(spot.getImageUrl()).into(imageView);*/
+
+        btnBookNow.setOnClickListener(v -> {
+            // Navigate to the booking page or handle booking logic
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
+    }
 }
