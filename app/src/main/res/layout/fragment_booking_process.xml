@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@drawable/round_corners">
+
+    <!-- Parking Space Name -->
+    <TextView
+        android:id="@+id/parkingSpaceName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Parking Space Name"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Date Selector -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/viewDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:hint="Select Date"
+        android:endIconMode="event"
+        android:endIconDrawable="@drawable/ic_calendar">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:onClick="@{() -> viewModel.showDatePickerDialog()}" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Time Selector -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/viewTime"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/viewDate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:hint="Select Time">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Duration Selector -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/viewDuration"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/viewTime"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:hint="Duration (Hours)">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Vehicle Details -->
+    <TextView
+        android:id="@+id/vehicleDetails"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Vehicle Details"
+        android:drawableEnd="@drawable/add"
+        android:layout_marginTop="16dp"
+        android:padding="8dp"
+        android:background="@drawable/round_btn_2"
+        app:layout_constraintTop_toBottomOf="@id/viewDuration"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Fee Breakdown -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/feeBreakdownLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/vehicleDetails"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp">
+
+        <!-- VAT Fee -->
+        <TextView
+            android:id="@+id/vatFee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="VAT Fee: £0.00"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/vatFeeValue"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/serviceFeeLabel"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:id="@+id/vatFeeValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="£1.70"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/vatFee"/>
+
+        <TextView
+            android:id="@+id/serviceFeeLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Service Fee:"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/serviceFeeValue"
+            app:layout_constraintTop_toBottomOf="@id/vatFee"
+            app:layout_constraintBottom_toTopOf="@id/totalPriceLabel"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:id="@+id/serviceFeeValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="£0.49"
+            style="@style/TextAppearance.Material3.BodyMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/serviceFeeLabel"/>
+
+
+        <TextView
+            android:id="@+id/totalPriceLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Total Price:"
+            style="@style/TextAppearance.Material3.HeadlineSmall"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/totalPrice"
+            app:layout_constraintTop_toBottomOf="@id/serviceFeeLabel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp"/>
+
+        <TextView
+            android:id="@+id/totalPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="£2.19"
+            style="@style/TextAppearance.Material3.HeadlineSmall"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/totalPriceLabel"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Book Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/bookBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Book Now"
+        app:layout_constraintTop_toBottomOf="@id/feeBreakdownLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"
+        style="@style/Widget.Material3.Button"
+        tools:ignore="NotSibling" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

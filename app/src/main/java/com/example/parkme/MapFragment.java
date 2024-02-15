@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -26,156 +31,140 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.List;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
+    private static final String TAG = "MapFragment";
+    private static final float DEFAULT_ZOOM = 15;
     private GoogleMap mMap;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        initializeMapFragment();
+        return view;
+    }
 
-        /*fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);*/
+    private void initializeMapFragment() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-
-        return view;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        setupMap();
+        loadParkingSpots();
+    }
+
+    private void setupMap() {
         mMap.setOnInfoWindowClickListener(this);
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
         enableMyLocation();
-        loadParkingSpots(); // Load and display parking spots
     }
-
-
 
     private void loadParkingSpots() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("parkingSpots").addSnapshotListener((snapshots, e) -> {
-            if (e != null) {
-                // Handle the error
-                return;
-            }
-            if (snapshots != null && !snapshots.isEmpty()) {
-                updateMapMarkers(snapshots.getDocuments());
-            }
-        });
+        FirebaseFirestore.getInstance().collection("ParkingSpot").get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        task.getResult().forEach(document ->
+                                addMarkerForParkingSpot(document.toObject(ParkingSpot.class)));
+                    } else {
+                        Log.w(TAG, "Error getting documents: ", task.getException());
+                    }
+                });
     }
 
-    private void updateMapMarkers(List<DocumentSnapshot> documents) {
-        mMap.clear(); // Clear existing markers
-        for (DocumentSnapshot document : documents) {
-            ParkingSpot spot = document.toObject(ParkingSpot.class);
-            if (spot != null) {
-                addMarkerForParkingSpot(spot);
-            }
+    private void addMarkerForParkingSpot(ParkingSpot spot) {
+        if (mMap == null || spot == null) {
+            Log.w(TAG, "Map is not ready or Spot is null");
+            return;
+        }
+
+        LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
+        Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(spot.getName()).snippet("Tap to book"));
+        if (marker != null) {
+            marker.setTag(spot);
+        } else {
+            Log.w(TAG, "Marker could not be added on the map");
         }
     }
 
-
-    private void addMarkerForParkingSpot(ParkingSpot spot) {
-        LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
-        Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(spot.getName()).snippet("Tap to book"));
-        marker.setTag(spot);
-    }
-
-
     private void enableMyLocation() {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(getActivity(), new String[]
-                    {Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
         }
         mMap.setMyLocationEnabled(true);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableMyLocation();
-            } else {
-                if (getActivity() == null) return; // Check if activity is still around
-
-                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    showLocationPermissionExplanation();
-                } else {
-                    informUserNavigateToSettings();
-                }
-            }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            enableMyLocation();
+        } else {
+            handlePermissionDenied();
         }
     }
 
-    private void showLocationPermissionExplanation() {
+    private void handlePermissionDenied() {
         View view = getView();
         if (view != null) {
             Snackbar.make(view, "Location permission is needed to show your current location on the map.", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Grant", v -> requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1))
+                    .setAction("Grant", v -> ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1))
                     .show();
         }
     }
 
-    private void informUserNavigateToSettings() {
-        new AlertDialog.Builder(getContext())
-                .setMessage("Location permission is needed for core functionality. Please enable it in the app settings.")
-                .setPositiveButton("Settings", (dialog, which) -> {
-                    if (getActivity() == null) return; // Check if activity is still around
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", getActivity().getPackageName(), null));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
-
-
     @Override
     public void onInfoWindowClick(@NonNull Marker marker) {
-        ParkingSpot spot = (ParkingSpot) marker.getTag();
-        if (spot != null) {
-            showBottomSheetDialog(spot);
+        Object tag = marker.getTag();
+        if (tag instanceof ParkingSpot) {
+            showBottomSheetDialog((ParkingSpot) tag);
+            moveCameraToSpot((ParkingSpot) tag);
         }
     }
 
+    private void moveCameraToSpot(ParkingSpot spot) {
+        LatLng spotLatLng = new LatLng(spot.getLatitude(), spot.getLongitude());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(spotLatLng, DEFAULT_ZOOM));
+    }
+
     private void showBottomSheetDialog(ParkingSpot spot) {
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getActivity());
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireActivity());
         View bottomSheetView = getLayoutInflater().inflate(R.layout.parkingspot_bottom_sheet, null);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        TextView tvTitle = bottomSheetView.findViewById(R.id.bottom_sheet_title);
-        TextView tvDetails = bottomSheetView.findViewById(R.id.bottom_sheet_details);
-        ImageView imageView = bottomSheetView.findViewById(R.id.imageParkingSpot);
-        TextView tvPrice = bottomSheetView.findViewById(R.id.tvPrice);
-        TextView tvRating = bottomSheetView.findViewById(R.id.tvRating);
-        Button btnBookNow = bottomSheetView.findViewById(R.id.bottom_sheet_book_now);
+        setupBottomSheetView(bottomSheetView, spot, bottomSheetDialog);
+        bottomSheetDialog.show();
+    }
 
+    private void setupBottomSheetView(View bottomSheetView, ParkingSpot spot, BottomSheetDialog bottomSheetDialog) {
+        TextView tvTitle = bottomSheetView.findViewById(R.id.bottom_sheet_title);
         tvTitle.setText(spot.getName());
+
+        TextView tvDetails = bottomSheetView.findViewById(R.id.bottom_sheet_details);
         tvDetails.setText(spot.getDetails());
+
+        ImageView imageView = bottomSheetView.findViewById(R.id.imageParkingSpot);
+        Glide.with(this).load(spot.getImageUrl()).into(imageView);
+
+        TextView tvPrice = bottomSheetView.findViewById(R.id.tvPrice);
         tvPrice.setText("Price: $" + spot.getPrice() + "/hour");
+
+        TextView tvRating = bottomSheetView.findViewById(R.id.tvRating);
         tvRating.setText("Rating: " + spot.getRating() + " ★");
 
-        // Load image using a library like Glide or Picasso
-        /*Glide.with(this).load(spot.getImageUrl()).into(imageView);*/
-
+        Button btnBookNow = bottomSheetView.findViewById(R.id.bottom_sheet_book_now);
         btnBookNow.setOnClickListener(v -> {
-            // Navigate to the booking page or handle booking logic
+            // Handle booking logic
             bottomSheetDialog.dismiss();
         });
-
-        bottomSheetDialog.show();
     }
 }

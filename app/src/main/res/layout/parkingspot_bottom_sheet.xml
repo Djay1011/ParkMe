@@ -6,7 +6,6 @@
     android:padding="16dp"
     android:background="@drawable/round_corners">
 
-    <!-- Image for the parking spot -->
     <ImageView
         android:id="@+id/imageParkingSpot"
         android:layout_width="0dp"
@@ -15,58 +14,62 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/local_parking"
-        android:layout_marginTop="36dp"/> <!-- Replace with a placeholder or remove src -->
+        android:layout_marginTop="8dp"
+        android:src="@drawable/local_parking" />
 
-    <!-- Title for the parking spot -->
     <TextView
         android:id="@+id/bottom_sheet_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="18sp"
+        android:layout_marginTop="16dp"
+        android:textSize="20sp"
         android:textStyle="bold"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/imageParkingSpot"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Rating for the parking spot -->
     <TextView
         android:id="@+id/tvRating"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/bottom_sheet_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Price for the parking spot -->
     <TextView
         android:id="@+id/tvPrice"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/tvRating"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Details for the parking spot -->
     <TextView
         android:id="@+id/bottom_sheet_details"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:textSize="14sp"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/tvPrice"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Book Now Button -->
     <Button
         android:id="@+id/bottom_sheet_book_now"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Book Now"
+        android:backgroundTint="@color/blue"
+        android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/bottom_sheet_details"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

@@ -1,6 +1,9 @@
 package com.example.parkme;
 
-public class ParkingSpot {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class ParkingSpot implements Parcelable {
     private String name;
     private String details;
     private double latitude;
@@ -14,11 +17,14 @@ public class ParkingSpot {
     }
 
     // Constructor with parameters
-    public ParkingSpot(String name, String details, double latitude, double longitude) {
+    public ParkingSpot(String name, String details, double latitude, double longitude, String imageUrl, double price, float rating) {
         this.name = name;
         this.details = details;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.imageUrl = imageUrl;
+        this.price = price;
+        this.rating = rating;
     }
 
     // Getters
@@ -38,19 +44,17 @@ public class ParkingSpot {
         return longitude;
     }
 
-    public double getRating() {
-        return longitude;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public double getPrice() {
-        return longitude;
+        return price;
     }
 
-    public double getImageUrl() {
-        return longitude;
+    public float getRating() {
+        return rating;
     }
-
-
 
     // Setters
     public void setName(String name) {
@@ -68,5 +72,54 @@ public class ParkingSpot {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
-}
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setRating(float rating) {
+        this.rating = rating;
+    }
+
+    protected ParkingSpot(Parcel in) {
+        name = in.readString();
+        details = in.readString();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        imageUrl = in.readString();
+        price = in.readDouble();
+        rating = in.readFloat();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(details);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeString(imageUrl);
+        dest.writeDouble(price);
+        dest.writeFloat(rating);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<ParkingSpot> CREATOR = new Parcelable.Creator<ParkingSpot>() {
+        @Override
+        public ParkingSpot createFromParcel(Parcel in) {
+            return new ParkingSpot(in);
+        }
+
+        @Override
+        public ParkingSpot[] newArray(int size) {
+            return new ParkingSpot[size];
+        }
+    };
+}
