@@ -167,7 +167,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private void showBookingBottomSheet(ParkingSpot spot) {
         // Create and show the booking bottom sheet
-        BookingProcess bookingBottomSheet = BookingProcess.newInstance(spot);
+        BookingProcess bookingBottomSheet = BookingProcess.newInstance(spot, null);
         bookingBottomSheet.show(getParentFragmentManager(), "BookingProcessTag");
     }
 }

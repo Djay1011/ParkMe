@@ -14,6 +14,8 @@ public class FirebaseManager {
     private final FirebaseFirestore firestore;
     private final FirebaseAuth auth;
 
+
+
     public FirebaseManager() {
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
@@ -28,7 +30,7 @@ public class FirebaseManager {
         }
 
         String userId = currentUser.getUid();
-        firestore.collection("users").document(userId).collection("cards")
+        firestore.collection("user").document(userId).collection("cards")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<CardDetails> cardDetailsList = new ArrayList<>();
@@ -49,7 +51,7 @@ public class FirebaseManager {
         }
 
         String userId = currentUser.getUid();
-        firestore.collection("users").document(userId).collection("cards")
+        firestore.collection("user").document(userId).collection("cards")
                 .document(cardDetails.getCardId())
                 .delete()
                 .addOnSuccessListener(aVoid -> onSuccess.run())

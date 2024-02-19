@@ -35,4 +35,6 @@
     <string name="CustomerId"></string>
     <string name="EphemeralKey"></string>
     <string name="delete_card">Delete</string>
+    <string name="remove_card">Remove Card</string>
+    <string name="add_new_card">Add New Card</string>
 </resources>

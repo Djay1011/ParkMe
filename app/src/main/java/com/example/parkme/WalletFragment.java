@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,8 @@ public class WalletFragment extends Fragment {
     private RecyclerView cardsRecyclerView;
     private CardsAdapter cardsAdapter;
     private FirebaseManager firebaseManager;
+    private ProgressBar progressBar;
+    private CardDetails preferredCard;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -29,6 +32,7 @@ public class WalletFragment extends Fragment {
 
         firebaseManager = new FirebaseManager();
 
+        progressBar = view.findViewById(R.id.progressBar);
         initializeRecyclerView(view);
         initializeAddCardButton(view);
         loadCardDetails();
@@ -54,8 +58,26 @@ public class WalletFragment extends Fragment {
     }
 
     private void loadCardDetails() {
-        firebaseManager.loadUserCardDetails(cards -> cardsAdapter.updateCardDetailsList(cards),
-                error -> handleCardLoadingError(error));
+        showLoading(true);
+        firebaseManager.loadUserCardDetails(cards -> {
+            showLoading(false);  // Hide loading on success
+            cardsAdapter.updateCardDetailsList(cards);
+            if (!cards.isEmpty()) {
+                preferredCard = cards.get(0);
+            }
+        }, error -> {
+            showLoading(false);  // Hide loading on failure
+            handleCardLoadingError(error);
+        });
+    }
+
+    public void openBookingProcess(ParkingSpot parkingSpot) {
+        BookingProcess bookingFragment = BookingProcess.newInstance(parkingSpot, preferredCard);
+        bookingFragment.show(getParentFragmentManager(), "booking");
+    }
+
+    private void showLoading(boolean show) {
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     private void handleCardLoadingError(Exception error) {

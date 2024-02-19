@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 
+import com.example.parkme.model.CardDetails;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -34,16 +35,20 @@ import java.util.Locale;
 public class BookingProcess extends BottomSheetDialogFragment {
 
     private static final String ARG_PARKING_SPOT = "parking_spot";
+    private static final String ARG_CARD_DETAILS = "card_details";
     private TextView parkingSpaceName, vatFeeValue, serviceFeeValue, totalPrice, errorTextView;
     private EditText dateEditText, timeEditText, durationEditText;
     private MaterialButton bookButton, addPaymentMethodButton;
     private FirebaseFirestore firestore;
     private ParkingSpot parkingSpot;
+    private CardDetails currentCard;
+    private TextView currentPaymentMethod;
 
-    public static BookingProcess newInstance(ParkingSpot spot) {
+    public static BookingProcess newInstance(ParkingSpot spot, @Nullable CardDetails cardDetails) {
         BookingProcess fragment = new BookingProcess();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARKING_SPOT, spot);
+        args.putParcelable(ARG_CARD_DETAILS, cardDetails);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,6 +57,11 @@ public class BookingProcess extends BottomSheetDialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         firestore = FirebaseFirestore.getInstance();
+
+        if (getArguments() != null) {
+            parkingSpot = getArguments().getParcelable(ARG_PARKING_SPOT);
+            currentCard = getArguments().getParcelable(ARG_CARD_DETAILS);
+        }
     }
 
     @Nullable
@@ -75,8 +85,19 @@ public class BookingProcess extends BottomSheetDialogFragment {
         totalPrice = view.findViewById(R.id.totalPrice);
         errorTextView = view.findViewById(R.id.errorTextView);
         addPaymentMethodButton = view.findViewById(R.id.addPaymentMethodButton);
+        currentPaymentMethod = view.findViewById(R.id.currentPaymentMethod);
+        updatePaymentMethodDisplay();
+
 
         loadData();
+    }
+
+    private void updatePaymentMethodDisplay() {
+        if (currentCard != null) {
+            currentPaymentMethod.setText("Card ending with " + currentCard.getLast4Digits());
+        } else {
+            currentPaymentMethod.setText("No payment method added");
+        }
     }
 
     private void setupListeners() {
