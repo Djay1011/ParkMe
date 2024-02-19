@@ -112,12 +112,10 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
         firestore.collection("user").document(userId).collection("cards").document(cardId)
                 .set(cardDetails)
                 .addOnSuccessListener(aVoid -> {
-                    // Successfully saved card details
-                    // Notify the user
+                    Toast.makeText(getActivity(), "Card added successfully.", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    // Failed to save card details
-                    // Handle the failure, e.g., by displaying an error message to the user
+                    Toast.makeText(getActivity(), "Failed to add card: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
