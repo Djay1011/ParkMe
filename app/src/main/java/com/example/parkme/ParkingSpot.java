@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class ParkingSpot implements Parcelable {
+    private String id;
     private String name;
     private String details;
     private double latitude;
@@ -17,7 +18,8 @@ public class ParkingSpot implements Parcelable {
     }
 
     // Constructor with parameters
-    public ParkingSpot(String name, String details, double latitude, double longitude, String imageUrl, double price, float rating) {
+    public ParkingSpot(String id, String name, String details, double latitude, double longitude, String imageUrl, double price, float rating) {
+        this.id = id;
         this.name = name;
         this.details = details;
         this.latitude = latitude;
@@ -28,6 +30,9 @@ public class ParkingSpot implements Parcelable {
     }
 
     // Getters
+    public String getId() {
+        return id;
+    }
     public String getName() {
         return name;
     }
@@ -86,6 +91,7 @@ public class ParkingSpot implements Parcelable {
     }
 
     protected ParkingSpot(Parcel in) {
+        id = in.readString(); // Add this line
         name = in.readString();
         details = in.readString();
         latitude = in.readDouble();
@@ -94,9 +100,9 @@ public class ParkingSpot implements Parcelable {
         price = in.readDouble();
         rating = in.readFloat();
     }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id); // Add this line
         dest.writeString(name);
         dest.writeString(details);
         dest.writeDouble(latitude);

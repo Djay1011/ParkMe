@@ -15,6 +15,7 @@
         android:text="Parking Space Name"
         android:textSize="25sp"
         android:textStyle="bold"
+        style="@style/TextAppearance.Material3.HeadlineMedium"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -24,21 +25,22 @@
         android:id="@+id/viewDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="30dp"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_marginTop="16dp"
         android:hint="Select Date"
-        android:endIconMode="event"
-        android:endIconDrawable="@drawable/ic_calendar">
+        app:endIconDrawable="@drawable/calendar"
+        app:endIconMode="custom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/parkingSpaceName"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusable="false"
-            android:onClick="@{() -> viewModel.showDatePickerDialog()}" />
+            android:inputType="none"
+            android:onClick="showDatePickerDialog" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Time Selector -->
@@ -56,7 +58,9 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/time"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:onClick="showTimePickerDialog"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Duration Selector -->
@@ -91,12 +95,43 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <TextView
+        android:id="@+id/paymentMethodLabel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Payment Method"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        app:layout_constraintTop_toBottomOf="@id/vehicleDetails"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/currentPaymentMethod"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="No payment method added"
+        android:padding="16dp"
+        app:layout_constraintTop_toBottomOf="@id/paymentMethodLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/addPaymentMethodButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Payment Method"
+        app:layout_constraintTop_toBottomOf="@id/bookBtn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+
     <!-- Fee Breakdown -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/feeBreakdownLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/vehicleDetails"
+        app:layout_constraintTop_toBottomOf="@id/currentPaymentMethod"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp">
@@ -106,7 +141,7 @@
             android:id="@+id/vatFee"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="VAT Fee: £0.00"
+            android:text="VAT Fee:"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/vatFeeValue"
@@ -118,7 +153,7 @@
             android:id="@+id/vatFeeValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="£1.70"
+            android:text="£0.00"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/vatFee"/>
@@ -139,7 +174,7 @@
             android:id="@+id/serviceFeeValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="£0.49"
+            android:text="£0.00"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/serviceFeeLabel"/>
@@ -161,11 +196,24 @@
             android:id="@+id/totalPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="£2.19"
+            android:text="£0.00"
             style="@style/TextAppearance.Material3.HeadlineSmall"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/totalPriceLabel"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/errorTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Error message"
+        android:textColor="@color/design_default_color_error"
+        android:visibility="gone"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        app:layout_constraintTop_toBottomOf="@id/feeBreakdownLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
 
     <!-- Book Button -->
     <com.google.android.material.button.MaterialButton
