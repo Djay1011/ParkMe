@@ -10,10 +10,15 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore firestore;
     private EditText fullNameInput, emailInput, phoneInput, passwordInput, retypePasswordInput;
 
     @Override
@@ -21,60 +26,87 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        mAuth = FirebaseAuth.getInstance();
+        initializeFirebase();
+        initializeViews();
+    }
 
+    private void initializeFirebase() {
+        mAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
+    }
+
+    private void initializeViews() {
         fullNameInput = findViewById(R.id.fullNameInput);
         emailInput = findViewById(R.id.emailInput);
         phoneInput = findViewById(R.id.phoneInput);
         passwordInput = findViewById(R.id.passwordInput);
         retypePasswordInput = findViewById(R.id.retypePasswordInput);
 
-        findViewById(R.id.signUpButton).setOnClickListener(view -> registerUser());
+        findViewById(R.id.signUpButton).setOnClickListener(view -> attemptRegistration());
         findViewById(R.id.signIn).setOnClickListener(view -> navigateToLogin());
     }
 
-    private void navigateToLogin() {
-        Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-        startActivity(intent);
+    private void attemptRegistration() {
+        if (!validateInputs()) {
+            return;
+        }
+        String email = emailInput.getText().toString().trim();
+        String password = passwordInput.getText().toString().trim();
+
+        createUserAccount(email, password);
     }
 
-    private void registerUser() {
-        String fullName = fullNameInput.getText().toString().trim();
+    private boolean validateInputs() {
         String email = emailInput.getText().toString().trim();
         String phone = phoneInput.getText().toString().trim();
         String password = passwordInput.getText().toString().trim();
         String retypePassword = retypePasswordInput.getText().toString().trim();
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email address.", Toast.LENGTH_LONG).show();
-            return;
+            showToast("Please enter a valid email address.");
+            return false;
         }
         if (!Patterns.PHONE.matcher(phone).matches()) {
-            Toast.makeText(this, "Please enter a valid phone number.", Toast.LENGTH_LONG).show();
-            return;
+            showToast("Please enter a valid phone number.");
+            return false;
         }
         if (!isValidPassword(password)) {
-            Toast.makeText(this, "Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.", Toast.LENGTH_LONG).show();
-            return;
+            showToast("Password must be at least 6 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.");
+            return false;
         }
         if (!password.equals(retypePassword)) {
-            Toast.makeText(this, "Passwords do not match.", Toast.LENGTH_LONG).show();
-            return;
+            showToast("Passwords do not match.");
+            return false;
         }
+        return true;
+    }
+
+    private void createUserAccount(String email, String password) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         sendEmailVerification();
+                        addUserToFirestore();
                     } else {
-                        String message = "Registration failed.";
-                        if (task.getException() != null) {
-                            message = task.getException().getMessage();
-                        }
-                        Toast.makeText(SignupActivity.this, message, Toast.LENGTH_SHORT).show();
+                        showToast("Registration failed: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
                     }
                 });
+    }
 
+    private void addUserToFirestore() {
+        Map<String, Object> user = new HashMap<>();
+        user.put("fullName", fullNameInput.getText().toString().trim());
+        user.put("email", emailInput.getText().toString().trim());
+        user.put("phone", phoneInput.getText().toString().trim());
 
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            firestore.collection("user")
+                    .document(firebaseUser.getUid())
+                    .set(user)
+                    .addOnSuccessListener(aVoid -> showToast("User added to Firestore"))
+                    .addOnFailureListener(e -> showToast("Error adding user to Firestore: " + e.getMessage()));
+        }
     }
 
     private void sendEmailVerification() {
@@ -83,38 +115,29 @@ public class SignupActivity extends AppCompatActivity {
             user.sendEmailVerification()
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(SignupActivity.this,
-                                    "Verification email sent to " + user.getEmail(),
-                                    Toast.LENGTH_SHORT).show();
-                            navigateToLogin(); // Or another appropriate action
+                            showToast("Verification email sent to " + user.getEmail());
+                            navigateToLogin();
                         } else {
-                            Toast.makeText(SignupActivity.this,
-                                    "Failed to send verification email.",
-                                    Toast.LENGTH_SHORT).show();
+                            showToast("Failed to send verification email.");
                         }
                     });
         }
     }
 
-    private void navigateToMainActivity() {
-        // TODO: Replace MainActivity.class with the actual class of your main activity
-        Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+    private void navigateToLogin() {
+        startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
     private boolean isValidPassword(String password) {
-        if (password.length() < 6) {
-            return false;
-        }
-        boolean hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
-        for (char c : password.toCharArray()) {
-            if (Character.isUpperCase(c)) hasUpper = true;
-            else if (Character.isLowerCase(c)) hasLower = true;
-            else if (Character.isDigit(c)) hasDigit = true;
-            else hasSpecial = true;
-        }
-        return hasUpper && hasLower && hasDigit && hasSpecial;
+        return password.length() >= 6 &&
+                password.matches(".*[A-Z].*") &&
+                password.matches(".*[a-z].*") &&
+                password.matches(".*[0-9].*") &&
+                password.matches(".*[!@#$%^&*(),.?\":{}|<>].*");
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
