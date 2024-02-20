@@ -1,4 +1,4 @@
-package com.example.parkme;
+package com.example.parkme.norm;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.parkme.R;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
@@ -18,6 +19,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private EditText emailInput, passwordInput;
 
+    private int biometricFailedAttempts = 0;
     private BiometricPrompt biometricPrompt;
     private BiometricPrompt.PromptInfo promptInfo;
 
@@ -62,28 +64,33 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void initBiometricPrompt() {
-        biometricPrompt = new BiometricPrompt(this, ContextCompat.getMainExecutor(this),
-                new BiometricPrompt.AuthenticationCallback() {
-                    @Override
-                    public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-                        super.onAuthenticationError(errorCode, errString);
-                        if (errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
-                            showToast("Authentication Error: " + errString);
-                        }
-                    }
+        biometricPrompt = new BiometricPrompt(this,
+                ContextCompat.getMainExecutor(this), new BiometricPrompt.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                super.onAuthenticationError(errorCode, errString);
+                if (errorCode != BiometricPrompt.ERROR_NEGATIVE_BUTTON) {
+                    showToast("Authentication Error: " + errString);
+                }
+            }
 
-                    @Override
-                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-                        super.onAuthenticationSucceeded(result);
-                        navigateToMainActivity();
-                    }
+            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                super.onAuthenticationSucceeded(result);
+                navigateToMainActivity();
+            }
 
-                    @Override
-                    public void onAuthenticationFailed() {
-                        super.onAuthenticationFailed();
-                        showToast("Authentication Failed. Please try again.");
-                    }
-                });
+            @Override
+            public void onAuthenticationFailed() {
+                super.onAuthenticationFailed();
+                biometricFailedAttempts++;
+                if (biometricFailedAttempts >= 3) {
+                    showToast("Too many failed attempts. Closing application.");
+                    finishAndRemoveTask(); // Close the application
+                } else {
+                    showToast("Authentication Failed. Attempt " + biometricFailedAttempts + "/3");
+                }
+            }
+        });
 
         promptInfo = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle("Biometric login for My App")

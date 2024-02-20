@@ -1,4 +1,4 @@
-package com.example.parkme;
+package com.example.parkme.norm;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,6 +8,8 @@ import android.util.Patterns;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.parkme.R;
+import com.example.parkme.norm.LoginActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;

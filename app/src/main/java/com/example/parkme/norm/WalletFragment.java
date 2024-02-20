@@ -1,4 +1,4 @@
-package com.example.parkme;
+package com.example.parkme.norm;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +13,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.parkme.AddCardBottomSheetFragment;
+import com.example.parkme.BookingProcess;
+import com.example.parkme.CardsAdapter;
+import com.example.parkme.ParkingSpot;
+import com.example.parkme.R;
 import com.example.parkme.model.CardDetails;
 import com.example.parkme.utils.FirebaseManager;
 

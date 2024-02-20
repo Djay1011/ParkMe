@@ -1,4 +1,4 @@
-package com.example.parkme;
+package com.example.parkme.norm;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -16,6 +16,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.parkme.BookingProcess;
+import com.example.parkme.ParkingSpot;
+import com.example.parkme.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
