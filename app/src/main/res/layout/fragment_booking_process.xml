@@ -111,19 +111,13 @@
         android:layout_height="wrap_content"
         android:text="No payment method added"
         android:padding="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
         app:layout_constraintTop_toBottomOf="@id/paymentMethodLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/addPaymentMethodButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Payment Method"
-        app:layout_constraintTop_toBottomOf="@id/bookBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
 
 
     <!-- Fee Breakdown -->

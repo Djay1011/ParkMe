@@ -3,50 +3,47 @@ package com.example.parkme;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.ImageView;
-
+import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.parkme.model.CardDetails;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
-public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHolder> {
-    private List<CardDetails> cardDetailsList;
-
-    public interface OnCardDeleteListener {
-        void onCardDelete(CardDetails cardDetails);
+public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.ViewHolder> {
+    public interface OnCardSelectListener {
+        void onCardSelect(CardDetails card);
     }
 
-    private final OnCardDeleteListener deleteListener;
+    public interface OnCardDeleteListener {
+        void onCardDelete(CardDetails card);
+    }
 
-    public CardsAdapter(List<CardDetails> cardDetailsList, OnCardDeleteListener deleteListener) {
+    private List<CardDetails> cardDetailsList;
+    private OnCardSelectListener selectListener;
+    private OnCardDeleteListener deleteListener;
+
+    public CardsAdapter(List<CardDetails> cardDetailsList,
+                        OnCardSelectListener selectListener,
+                        OnCardDeleteListener deleteListener) {
         this.cardDetailsList = cardDetailsList != null ? cardDetailsList : new ArrayList<>();
+        this.selectListener = selectListener;
         this.deleteListener = deleteListener;
     }
 
-    public void updateCardDetailsList(List<CardDetails> newCardDetailsList) {
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new CardDetailsDiffCallback(this.cardDetailsList, newCardDetailsList));
-        this.cardDetailsList.clear();
-        this.cardDetailsList.addAll(newCardDetailsList);
-        diffResult.dispatchUpdatesTo(this);
-    }
-
-    @NonNull
     @Override
-    public CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_card, parent, false);
-        return new CardViewHolder(view, deleteListener);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_card, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CardViewHolder holder, int position) {
-        CardDetails cardDetails = cardDetailsList.get(position);
-        holder.bind(cardDetails);
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        CardDetails card = cardDetailsList.get(position);
+        holder.bind(card);
     }
 
     @Override
@@ -54,58 +51,36 @@ public class CardsAdapter extends RecyclerView.Adapter<CardsAdapter.CardViewHold
         return cardDetailsList.size();
     }
 
-    static class CardViewHolder extends RecyclerView.ViewHolder {
-        TextView textViewCardDetails;
-        ImageView imageViewDeleteCard;
-        CardDetails cardDetails;
+    public void updateCardDetailsList(List<CardDetails> newCardDetailsList) {
+        cardDetailsList.clear();
+        cardDetailsList.addAll(newCardDetailsList);
+        notifyDataSetChanged();
+    }
 
-        CardViewHolder(View itemView, OnCardDeleteListener deleteListener) {
+    class ViewHolder extends RecyclerView.ViewHolder {
+        TextView cardInfoTextView;
+        ImageView deleteButton; // Changed to ImageView
+
+        ViewHolder(View itemView) {
             super(itemView);
-            textViewCardDetails = itemView.findViewById(R.id.textViewCardDetails);
-            imageViewDeleteCard = itemView.findViewById(R.id.imageViewDeleteCard);
+            cardInfoTextView = itemView.findViewById(R.id.textViewCardDetails);
+            deleteButton = itemView.findViewById(R.id.imageViewDeleteCard); // Make sure this ID corresponds to an ImageView
 
-            imageViewDeleteCard.setOnClickListener(view -> {
-                if (deleteListener != null && cardDetails != null) {
-                    deleteListener.onCardDelete(cardDetails);
+            itemView.setOnClickListener(v -> {
+                if (selectListener != null) {
+                    selectListener.onCardSelect(cardDetailsList.get(getAdapterPosition()));
+                }
+            });
+
+            deleteButton.setOnClickListener(v -> {
+                if (deleteListener != null) {
+                    deleteListener.onCardDelete(cardDetailsList.get(getAdapterPosition()));
                 }
             });
         }
 
-        void bind(CardDetails cardDetails) {
-            this.cardDetails = cardDetails;
-            textViewCardDetails.setText("•••• " + cardDetails.getLast4Digits() +
-                    " Exp: " + cardDetails.getExpMonth() + "/" + cardDetails.getExpYear());
-        }
-    }
-
-    static class CardDetailsDiffCallback extends DiffUtil.Callback {
-
-        private final List<CardDetails> oldList;
-        private final List<CardDetails> newList;
-
-        CardDetailsDiffCallback(List<CardDetails> oldList, List<CardDetails> newList) {
-            this.oldList = oldList;
-            this.newList = newList;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).getCardId().equals(newList.get(newItemPosition).getCardId());
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).equals(newList.get(newItemPosition));
+        void bind(CardDetails card) {
+            cardInfoTextView.setText("Card ending in " + card.getLast4Digits());
         }
     }
 }

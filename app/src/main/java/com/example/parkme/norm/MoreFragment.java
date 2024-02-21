@@ -30,12 +30,12 @@ public class MoreFragment extends Fragment {
         view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
         view.findViewById(R.id.darkModeSwitch).setOnClickListener(v -> toggleDarkMode());
         view.findViewById(R.id.notificationSwitch).setOnClickListener(v -> toggleNotifications());
-        view.findViewById(R.id.vehicleInfoLayout).setOnClickListener(v -> viewVehicleInfo());
-        view.findViewById(R.id.paymentLayout).setOnClickListener(v -> viewPaymentMethod());
-        view.findViewById(R.id.securityLayout).setOnClickListener(v -> viewSecurityPrivacy());
-        view.findViewById(R.id.contactUsLayout).setOnClickListener(v -> contactUs());
-        view.findViewById(R.id.aboutUsLayout).setOnClickListener(v -> aboutUs());
-        view.findViewById(R.id.logOutLayout).setOnClickListener(v -> logOut());
+        view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
+        view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
+        view.findViewById(R.id.securityText).setOnClickListener(v -> viewSecurityPrivacy());
+        view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
+        /*view.findViewById(R.id.aboutUsLayout).setOnClickListener(v -> aboutUs());*/
+        view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
     }
 
     private void viewProfile() {

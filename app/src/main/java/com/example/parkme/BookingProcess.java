@@ -20,19 +20,25 @@ import android.widget.TimePicker;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.parkme.model.CardDetails;
+import com.example.parkme.norm.WalletFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
 import java.util.Locale;
 
-public class BookingProcess extends BottomSheetDialogFragment {
+public class BookingProcess extends BottomSheetDialogFragment{
 
     private static final String ARG_PARKING_SPOT = "parking_spot";
     private static final String ARG_CARD_DETAILS = "card_details";
@@ -43,6 +49,7 @@ public class BookingProcess extends BottomSheetDialogFragment {
     private ParkingSpot parkingSpot;
     private CardDetails currentCard;
     private TextView currentPaymentMethod;
+    private SharedViewModel sharedViewModel;
 
     public static BookingProcess newInstance(ParkingSpot spot, @Nullable CardDetails cardDetails) {
         BookingProcess fragment = new BookingProcess();
@@ -52,6 +59,20 @@ public class BookingProcess extends BottomSheetDialogFragment {
         fragment.setArguments(args);
         return fragment;
     }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        sharedViewModel.getSelectedCard().observe(getViewLifecycleOwner(), this::updateCardDetails);
+    }
+
+    public void updateCardDetails(CardDetails card) {
+        // Update the UI with the selected card
+        currentCard = card;
+        updatePaymentMethodDisplay();
+    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,6 +83,8 @@ public class BookingProcess extends BottomSheetDialogFragment {
             parkingSpot = getArguments().getParcelable(ARG_PARKING_SPOT);
             currentCard = getArguments().getParcelable(ARG_CARD_DETAILS);
         }
+
+        fetchCardDetails();
     }
 
     @Nullable
@@ -84,12 +107,47 @@ public class BookingProcess extends BottomSheetDialogFragment {
         serviceFeeValue = view.findViewById(R.id.serviceFeeValue);
         totalPrice = view.findViewById(R.id.totalPrice);
         errorTextView = view.findViewById(R.id.errorTextView);
-        addPaymentMethodButton = view.findViewById(R.id.addPaymentMethodButton);
         currentPaymentMethod = view.findViewById(R.id.currentPaymentMethod);
-        updatePaymentMethodDisplay();
+
 
 
         loadData();
+    }
+
+    /**@Override
+    public void onCardSelected(CardDetails selectedCard) {
+        currentCard = selectedCard;
+        updatePaymentMethodDisplay();
+        // You can add logic here if you need to do anything else with the selected card
+    }*/
+
+
+    private void fetchCardDetails() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid(); // Get current user's ID
+            firestore.collection("user").document(userId).collection("cards")
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            // Assuming you want to use the first card
+                            CardDetails card = queryDocumentSnapshots.getDocuments().get(0).toObject(CardDetails.class);
+                            if (card != null) {
+                                currentCard = card;
+                                updatePaymentMethodDisplay();
+                            }
+                        } else {
+                            // Handle case where no card details are found
+                            currentPaymentMethod.setText("No payment method added");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        // Handle any errors here
+                    });
+        } else {
+            // Handle case where no user is logged in
+            currentPaymentMethod.setText("No user logged in");
+        }
     }
 
     private void updatePaymentMethodDisplay() {
@@ -107,12 +165,24 @@ public class BookingProcess extends BottomSheetDialogFragment {
         bookButton.setOnClickListener(v -> processBooking());
         durationEditText.addTextChangedListener(new CostTextWatcher());
 
-        addPaymentMethodButton.setOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), Payments.class);
-            startActivity(intent);
+        currentPaymentMethod.setOnClickListener(v -> {
+            // Redirect to WalletFragment
+            redirectToWalletFragment();
+
         });
     }
 
+    private void redirectToWalletFragment() {
+        dismiss();
+        FragmentActivity activity = getActivity();
+        if (activity != null) {
+            WalletFragment walletFragment = new WalletFragment();
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragment_container, walletFragment);
+            transaction.addToBackStack(null); // Add this transaction to the back stack
+            transaction.commit();
+        }
+    }
     private class CostTextWatcher implements TextWatcher {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
