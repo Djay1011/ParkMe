@@ -1,9 +1,11 @@
 package com.example.parkme.norm;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -20,6 +22,8 @@ public class MoreFragment extends Fragment {
 
         // Initialize views and set up listeners
         setUpViewsAndListeners(view);
+        TextView vehicleInfoTextView = view.findViewById(R.id.VehicleInfoText);
+        vehicleInfoTextView.setOnClickListener(v -> viewVehicleInfo());
         return view;
     }
 
@@ -51,7 +55,8 @@ public class MoreFragment extends Fragment {
     }
 
     private void viewVehicleInfo() {
-        // Code to view vehicle information
+        Intent intent = new Intent(getActivity(), VehicleInfoActivity.class);
+        startActivity(intent);
     }
 
     private void viewPaymentMethod() {

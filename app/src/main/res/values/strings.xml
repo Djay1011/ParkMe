@@ -38,4 +38,8 @@
     <string name="remove_card">Remove Card</string>
     <string name="add_new_card">Add New Card</string>
     <string name="email_or_username">Email/Username</string>
+    <string name="back_button_description">Back Btn\n</string>
+    <string name="vehicle_info">VehicleInfo</string>
+    <string name="enter_reg">ENTER REG</string>
+    <string name="add_vehicle">Add Vehicle</string>
 </resources>
