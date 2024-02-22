@@ -9,107 +9,158 @@ public class ParkingSpot implements Parcelable {
     private String details;
     private double latitude;
     private double longitude;
-    private String imageUrl; // URL to the image
-    private double price;    // Price per hour
-    private float rating;
+    private double price;
+    private String sizeType;
+    private int capacity;
+    private int bookedSpots;
+    private boolean hasCCTV;
+    private boolean hasDisabledAccess;
+    private boolean hasElectricCharger;
 
     // Empty constructor needed for Firestore data retrieval
     public ParkingSpot() {
     }
 
-    // Constructor with parameters
-    public ParkingSpot(String id, String name, String details, double latitude, double longitude, String imageUrl, double price, float rating) {
+    public ParkingSpot(String id, String name, String details, double latitude, double longitude, double price, String sizeType, int capacity, int bookedSpots, boolean hasCCTV, boolean hasDisabledAccess, boolean hasElectricCharger) {
         this.id = id;
         this.name = name;
         this.details = details;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.imageUrl = imageUrl;
         this.price = price;
-        this.rating = rating;
+        this.sizeType = sizeType;
+        this.capacity = capacity;
+        this.bookedSpots = bookedSpots;
+        this.hasCCTV = hasCCTV;
+        this.hasDisabledAccess = hasDisabledAccess;
+        this.hasElectricCharger = hasElectricCharger;
     }
 
-    // Getters
-    public String getId() {
-        return id;
+    public void setId(String id) {
+        this.id = id;
     }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDetails() {
         return details;
     }
 
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public float getRating() {
-        return rating;
-    }
-
-    // Setters
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public double getLatitude() {
+        return latitude;
     }
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    public double getLongitude() {
+        return longitude;
+    }
+
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
+    public double getPrice() {
+        return price;
     }
 
     public void setPrice(double price) {
         this.price = price;
     }
 
-    public void setRating(float rating) {
-        this.rating = rating;
+    public String getSizeType() {
+        return sizeType;
+    }
+
+    public void setSizeType(String sizeType) {
+        this.sizeType = sizeType;
+    }
+
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getBookedSpots() {
+        return bookedSpots;
+    }
+
+    public void setBookedSpots(int bookedSpots) {
+        this.bookedSpots = bookedSpots;
+    }
+
+    public boolean isAvailable() {
+        return bookedSpots < capacity;
+    }
+
+    public boolean isHasCCTV() {
+        return hasCCTV;
+    }
+
+    public void setHasCCTV(boolean hasCCTV) {
+        this.hasCCTV = hasCCTV;
+    }
+
+    public boolean isHasDisabledAccess() {
+        return hasDisabledAccess;
+    }
+
+    public void setHasDisabledAccess(boolean hasDisabledAccess) {
+        this.hasDisabledAccess = hasDisabledAccess;
+    }
+
+    public boolean isHasElectricCharger() {
+        return hasElectricCharger;
+    }
+
+    public void setHasElectricCharger(boolean hasElectricCharger) {
+        this.hasElectricCharger = hasElectricCharger;
     }
 
     protected ParkingSpot(Parcel in) {
-        id = in.readString(); // Add this line
+        id = in.readString();
         name = in.readString();
         details = in.readString();
         latitude = in.readDouble();
         longitude = in.readDouble();
-        imageUrl = in.readString();
         price = in.readDouble();
-        rating = in.readFloat();
+        sizeType = in.readString();
+        capacity = in.readInt();
+        bookedSpots = in.readInt();
+        hasCCTV = in.readByte() != 0;
+        hasDisabledAccess = in.readByte() != 0;
+        hasElectricCharger = in.readByte() != 0;
     }
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(id); // Add this line
+        dest.writeString(id);
         dest.writeString(name);
         dest.writeString(details);
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
-        dest.writeString(imageUrl);
         dest.writeDouble(price);
-        dest.writeFloat(rating);
+        dest.writeString(sizeType);
+        dest.writeInt(capacity);
+        dest.writeInt(bookedSpots);
+        dest.writeByte((byte) (hasCCTV ? 1 : 0));
+        dest.writeByte((byte) (hasDisabledAccess ? 1 : 0));
+        dest.writeByte((byte) (hasElectricCharger ? 1 : 0));
     }
 
     @Override

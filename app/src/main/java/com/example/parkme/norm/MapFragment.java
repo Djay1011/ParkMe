@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -151,14 +152,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         TextView tvDetails = bottomSheetView.findViewById(R.id.bottom_sheet_details);
         tvDetails.setText(spot.getDetails());
 
-        ImageView imageView = bottomSheetView.findViewById(R.id.imageParkingSpot);
-         Glide.with(this).load(spot.getImageUrl()).into(imageView);
+        ImageView iconCCTV = bottomSheetView.findViewById(R.id.iconCCTV);
+        ImageView iconDisabledAccess = bottomSheetView.findViewById(R.id.iconDisabledAccess);
+        ImageView iconElectricCharger = bottomSheetView.findViewById(R.id.iconElectricCharger);
 
-        TextView tvPrice = bottomSheetView.findViewById(R.id.tvPrice);
-        tvPrice.setText("Price: $" + spot.getPrice() + "/hour");
 
-        TextView tvRating = bottomSheetView.findViewById(R.id.tvRating);
-        tvRating.setText("Rating: " + spot.getRating() + " ★");
+        iconCCTV.setVisibility(spot.isHasCCTV() ? View.VISIBLE : View.GONE);
+        iconDisabledAccess.setVisibility(spot.isHasDisabledAccess() ? View.VISIBLE : View.GONE);
+        iconElectricCharger.setVisibility(spot.isHasElectricCharger() ? View.VISIBLE : View.GONE);
+
+
+        TextView tvSizeType = bottomSheetView.findViewById(R.id.SizeType);
+        tvSizeType.setText(spot.getSizeType());
+
+        TextView tvPrice = bottomSheetView.findViewById(R.id.Price);
+        tvPrice.setText("£" + spot.getPrice() + "/hour");
 
         Button btnBookNow = bottomSheetView.findViewById(R.id.bottom_sheet_book_now);
         btnBookNow.setOnClickListener(v -> {

@@ -6,72 +6,139 @@
     android:padding="16dp"
     android:background="@drawable/round_corners">
 
-    <ImageView
-        android:id="@+id/imageParkingSpot"
-        android:layout_width="382dp"
-        android:layout_height="141dp"
-        android:layout_marginTop="8dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/local_parking"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/bottom_sheet_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:text="Parking Spot Title"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/imageParkingSpot"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/tvRating"
-        android:layout_width="0dp"
+        android:id="@+id/DescriptionHeading"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
-        android:textColor="@color/black"
+        android:text="Description"
+        android:textSize="15sp"
+        android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/bottom_sheet_title"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/tvPrice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvRating"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_marginTop="20dp"/>
 
     <TextView
         android:id="@+id/bottom_sheet_details"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:text="Detailed description here"
+        android:layout_marginTop="4dp"
         android:textSize="14sp"
         android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/tvPrice"
+        app:layout_constraintTop_toBottomOf="@id/DescriptionHeading"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/bottom_sheet_book_now"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/SpaceFeaturesHeading"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Book Now"
-        android:backgroundTint="@color/blue"
-        android:textColor="@color/white"
+        android:text="Space Features"
+        android:textSize="15sp"
+        android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/bottom_sheet_details"
         app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="10dp"/>
+
+    <ImageView
+        android:id="@+id/iconCCTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/videocam"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/SpaceFeaturesHeading"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iconDisabledAccess"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/icon_background"
+        app:tint="@color/blue"
+        android:layout_marginTop="10dp"/>
+
+    <ImageView
+        android:id="@+id/iconDisabledAccess"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/accessible"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/SpaceFeaturesHeading"
+        app:layout_constraintStart_toEndOf="@id/iconCCTV"
+        app:layout_constraintEnd_toStartOf="@+id/iconElectricCharger"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/icon_background"
+        app:tint="@color/blue"
+        android:layout_marginTop="10dp"/>
+
+
+    <ImageView
+        android:id="@+id/iconElectricCharger"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:src="@drawable/electric_car"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/iconDisabledAccess"
+        app:layout_constraintTop_toBottomOf="@id/SpaceFeaturesHeading"
+        android:background="@drawable/icon_background"
+        app:tint="@color/blue"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/SizeTypeHeading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Size Type"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/SpaceFeaturesHeading"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="40dp"/>
+
+    <TextView
+        android:id="@+id/SizeType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Small/Medium/Large"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/SizeTypeHeading"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+    <TextView
+        android:id="@+id/Price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="£0/hour"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/SizeType"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/bottom_sheet_book_now"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reserve Now"
+        android:background="@drawable/straight_btn"
+        android:textColor="@color/white"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/SizeType"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
