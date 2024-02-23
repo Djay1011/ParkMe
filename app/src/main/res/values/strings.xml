@@ -42,4 +42,5 @@
     <string name="vehicle_info">VehicleInfo</string>
     <string name="enter_reg">ENTER REG</string>
     <string name="add_vehicle">Add Vehicle</string>
+    <string name="back_button">Backbtn</string>
 </resources>

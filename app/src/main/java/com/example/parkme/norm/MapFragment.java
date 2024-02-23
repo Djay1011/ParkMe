@@ -1,6 +1,7 @@
 package com.example.parkme.norm;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.example.parkme.BookingProcess;
+import com.example.parkme.BookingProcessActivity;
 import com.example.parkme.ParkingSpot;
 import com.example.parkme.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -177,8 +179,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     private void showBookingBottomSheet(ParkingSpot spot) {
-        // Create and show the booking bottom sheet
-        BookingProcess bookingBottomSheet = BookingProcess.newInstance(spot, null);
-        bookingBottomSheet.show(getParentFragmentManager(), "BookingProcessTag");
+        Intent intent = new Intent(getActivity(), BookingProcessActivity.class);
+        intent.putExtra("PARKING_SPOT", spot);
+        startActivity(intent);
     }
 }
