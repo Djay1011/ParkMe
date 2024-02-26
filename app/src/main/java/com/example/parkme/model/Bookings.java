@@ -9,20 +9,28 @@ public class Bookings {
     private String parkingSpotId;
     private String cardId;
     private Date startTime;
-    private int durationInHours; // Duration in hours
+    private Date endTime; // endTime field
+    private int duration; // Duration in hours
     private double totalPrice;
+    private String status; // Status field
+
+    public enum BookingStatus {
+        UPCOMING, INPROGRESS, COMPLETED
+    }
 
     public Bookings() {
     }
 
-    public Bookings(String bookingId, String userId, String parkingSpotId, String cardId, Date startTime, int durationInHours, double totalPrice) {
+    public Bookings(String bookingId, String userId, String parkingSpotId, String cardId, Date startTime, Date endTime, int duration, double totalPrice, String status) {
         this.bookingId = bookingId;
         this.userId = userId;
         this.parkingSpotId = parkingSpotId;
         this.cardId = cardId;
         this.startTime = startTime;
-        this.durationInHours = durationInHours;
+        this.endTime = endTime;
+        this.duration = duration;
         this.totalPrice = totalPrice;
+        this.status = status;
     }
 
     public String getBookingId() {
@@ -65,19 +73,20 @@ public class Bookings {
         this.startTime = startTime;
     }
 
-    public int getDurationInHours() {
-        return durationInHours;
-    }
-
-    public void setDurationInHours(int durationInHours) {
-        this.durationInHours = durationInHours;
-    }
-
     public Date getEndTime() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
-        calendar.add(Calendar.HOUR_OF_DAY, durationInHours);
-        return calendar.getTime();
+        return endTime;
+    }
+
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int durationInHours) {
+        this.duration = durationInHours;
     }
 
     public double getTotalPrice() {
@@ -86,5 +95,13 @@ public class Bookings {
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

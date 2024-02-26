@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,11 +25,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BookingProcessActivity extends AppCompatActivity {
     private TextInputEditText dateEditText;
@@ -142,6 +150,7 @@ public class BookingProcessActivity extends AppCompatActivity {
                 if (validateInputs()) {
                     verifyAvailability();
                     // Further processing like saving booking details
+                    confirmBooking();
                 }
             }
         });
@@ -419,5 +428,86 @@ public class BookingProcessActivity extends AppCompatActivity {
             errorTextView.setVisibility(View.VISIBLE); // Show the error TextView
         }
     }
+
+    private void confirmBooking() {
+        // Increment the booked spots and update the parking spot in Firestore
+        int newBookedSpots = parkingSpot.getBookedSpots() + 1;
+        parkingSpot.setBookedSpots(newBookedSpots);
+
+        Map<String, Object> updateMap = new HashMap<>();
+        updateMap.put("bookedSpots", newBookedSpots);
+
+        firestore.collection("ParkingSpot").document(parkingSpot.getName())
+                .update(updateMap)
+                .addOnSuccessListener(aVoid -> {
+                    // Successfully updated the parking spot information
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure here
+                });
+
+        // Create booking details
+        Map<String, Object> bookingDetails = new HashMap<>();
+        bookingDetails.put("parkingSpotId", parkingSpot.getName());
+        bookingDetails.put("userId", FirebaseAuth.getInstance().getCurrentUser().getUid());
+        bookingDetails.put("date", dateEditText.getText().toString());
+        bookingDetails.put("startTime", startTimeEditText.getText().toString());
+        bookingDetails.put("endTime", endTimeEditText.getText().toString());
+        bookingDetails.put("duration", durationEditText.getText().toString());
+        // Add other necessary fields
+
+        // Save booking details to Firestore
+        firestore.collection("Bookings").add(bookingDetails)
+                .addOnSuccessListener(documentReference -> {
+                    // Generate and display the booking confirmation receipt
+                    String confirmationReceipt = generateConfirmationReceipt(bookingDetails);
+                    Bitmap qrCodeBitmap = generateQRCode(confirmationReceipt);
+                    displayConfirmation(confirmationReceipt, qrCodeBitmap);
+
+                    // Optionally, send the confirmation receipt via email or another method
+                })
+                .addOnFailureListener(e -> {
+                    showError("Booking failed. Please try again.");
+                });
+    }
+
+    private String generateConfirmationReceipt(Map<String, Object> bookingDetails) {
+        // Generate a confirmation receipt based on bookingDetails
+        return "Booking Confirmed: " + bookingDetails.get("parkingSpotId") +
+                " on " + bookingDetails.get("date") +
+                " from " + bookingDetails.get("startTime") +
+                " to " + bookingDetails.get("endTime");
+    }
+
+    private Bitmap generateQRCode(String text) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            int width = bitMatrix.getWidth();
+            int height = bitMatrix.getHeight();
+            Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bmp;
+        } catch (WriterException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void displayConfirmation(String confirmationReceipt, Bitmap qrCodeBitmap) {
+        TextView confirmationTextView = findViewById(R.id.confirmationDetailsTextView);
+        ImageView qrCodeImageView = findViewById(R.id.qrCodeImageView);
+
+        confirmationTextView.setText(confirmationReceipt);
+        confirmationTextView.setVisibility(View.VISIBLE);
+
+        qrCodeImageView.setImageBitmap(qrCodeBitmap);
+        qrCodeImageView.setVisibility(View.VISIBLE);
+    }
+
 
 }
