@@ -26,7 +26,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:menu="@menu/bottom_nav"
-        android:background="@android:color/transparent" />
+        android:background="@drawable/navbar_shape" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_map"
@@ -34,7 +34,7 @@
         android:layout_height="60dp"
         android:src="@drawable/ic_map"
         android:visibility="visible"
-        app:backgroundTint="@color/greenLight"
+        app:backgroundTint="@color/green"
         app:layout_constraintBottom_toBottomOf="@id/bottom_navigation"
         app:layout_constraintLeft_toLeftOf="@id/bottom_navigation"
         app:layout_constraintRight_toRightOf="@id/bottom_navigation"
