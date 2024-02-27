@@ -1,5 +1,7 @@
 package com.example.parkme;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,9 +20,15 @@ import java.util.Locale;
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
 
     private final List<Bookings> bookingList;
+    private OnBookingClickListener listener;
 
-    public HistoryAdapter(List<Bookings> bookingList) {
+    public interface OnBookingClickListener {
+        void onBookingClick(Bookings booking);
+    }
+
+    public HistoryAdapter(List<Bookings> bookingList, OnBookingClickListener listener) {
         this.bookingList = bookingList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -41,6 +49,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         holder.dateView.setText(dateFormat.format(booking.getStartTime())); // Assuming startTime has the date
         holder.totalPriceView.setText(String.format(Locale.getDefault(), "£%.2f", booking.getTotalPrice())); // Format the price to two decimal places
         holder.statusView.setText(booking.getStatus());
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ReceiptActivity.class);
+            intent.putExtra("bookingId", booking.getBookingId());
+            v.getContext().startActivity(intent);
+        });
 
         switch (booking.getStatus().toUpperCase()) {
             case "UPCOMING":
@@ -52,7 +65,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
             case "COMPLETED":
                 holder.statusView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.colorCompleted));
                 break;
-            case "CANCELLATION":
+            case "CANCELLED":
                 holder.statusView.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.colorCancellation));
                 break;
             default:

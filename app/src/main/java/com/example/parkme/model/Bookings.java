@@ -14,7 +14,7 @@ public class Bookings {
     private double totalPrice;
     private String status;
     public enum BookingStatus {
-        UPCOMING, INPROGRESS, COMPLETED
+        UPCOMING, INPROGRESS, COMPLETED, CANCELLED
     }
 
     public Bookings() {

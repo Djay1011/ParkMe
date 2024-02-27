@@ -1,5 +1,6 @@
 package com.example.parkme.norm;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +16,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.parkme.R;
+import com.example.parkme.ReceiptActivity;
 import com.example.parkme.model.Bookings;
 import com.example.parkme.HistoryAdapter;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -72,14 +75,23 @@ public class BookingFragment extends Fragment {
     private void updateBookingList(QuerySnapshot querySnapshot) {
         bookingList.clear();
         if (querySnapshot != null) {
-            querySnapshot.forEach(doc -> bookingList.add(doc.toObject(Bookings.class)));
+            for (DocumentSnapshot documentSnapshot : querySnapshot.getDocuments()) {
+                Bookings booking = documentSnapshot.toObject(Bookings.class);
+                if (booking != null) {
+                    booking.setBookingId(documentSnapshot.getId()); // Assuming a setBookingId method exists
+                }
+                bookingList.add(booking);
+            }
             adapter.notifyDataSetChanged();
         }
         updateUIBasedOnData();
     }
-
     private void setupRecyclerView() {
-        adapter = new HistoryAdapter(bookingList);
+        adapter = new HistoryAdapter(bookingList, booking -> {
+            Intent intent = new Intent(getActivity(), ReceiptActivity.class);
+            intent.putExtra("bookingId", booking.getBookingId());
+            startActivity(intent);
+        });
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
     }
