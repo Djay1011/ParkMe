@@ -100,7 +100,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     }
                 });
 
-                return false;
+                return true;
             }
 
             @Override

@@ -9,11 +9,10 @@ public class Bookings {
     private String parkingSpotId;
     private String cardId;
     private Date startTime;
-    private Date endTime; // endTime field
-    private int duration; // Duration in hours
+    private Date endTime;
+    private int duration;
     private double totalPrice;
-    private String status; // Status field
-
+    private String status;
     public enum BookingStatus {
         UPCOMING, INPROGRESS, COMPLETED
     }

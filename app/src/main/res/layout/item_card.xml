@@ -34,7 +34,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:contentDescription="@string/delete_card" />
+        android:contentDescription="@string/delete_card"
+        app:tint="@color/muted_red" />
 
 
     <!-- Include more views as needed -->

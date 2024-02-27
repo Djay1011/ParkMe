@@ -40,7 +40,9 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
         firestore = FirebaseFirestore.getInstance();
 
         // Initialize Stripe instance
-        PaymentConfiguration.init(getContext(), "pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E"); // Replace with your actual key
+        PaymentConfiguration.init(getContext(), "pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E");
+
+        stripe = new Stripe(getContext(), PaymentConfiguration.getInstance(getContext()).getPublishableKey());
 
         auth = FirebaseAuth.getInstance();
 

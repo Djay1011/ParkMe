@@ -7,7 +7,6 @@
     android:padding="16dp"
     tools:context=".BookingProcessActivity">
 
-    <!-- Back Button -->
     <ImageView
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
@@ -20,7 +19,6 @@
         android:clickable="true"
         android:focusable="true" />
 
-    <!-- Parking Space Name, centered and to the right of the back button -->
     <TextView
         android:id="@+id/parkingSpaceName"
         android:layout_width="0dp"
@@ -37,8 +35,6 @@
         android:layout_marginTop="16dp"/>
 
 
-
-    <!-- Date Selector -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/viewDate"
         android:layout_width="0dp"
@@ -81,7 +77,6 @@
             android:onClick="showStartTimePickerDialog"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- End Time Selector -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/viewEndTime"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
@@ -101,7 +96,6 @@
             android:onClick="showEndTimePickerDialog"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Duration Selector -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/viewDuration"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
@@ -119,7 +113,6 @@
             android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Vehicle Details Heading -->
     <TextView
         android:id="@+id/vehicleDetailsHeading"
         style="@style/TextAppearance.Material3.BodyMedium"
@@ -163,7 +156,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Fee Breakdown -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/feeBreakdownLayout"
         android:layout_width="0dp"
@@ -173,7 +165,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp">
 
-        <!-- VAT Fee -->
         <TextView
             android:id="@+id/vatFee"
             android:layout_width="0dp"
@@ -287,6 +278,4 @@
         app:layout_constraintTop_toBottomOf="@id/confirmationDetailsTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
