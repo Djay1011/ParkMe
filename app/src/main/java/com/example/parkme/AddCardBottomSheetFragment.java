@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.stripe.android.ApiResultCallback;
+import com.stripe.android.PaymentConfiguration;
 import com.stripe.android.Stripe;
 import com.stripe.android.model.CardParams;
 import com.stripe.android.model.Token;
@@ -39,7 +40,7 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
         firestore = FirebaseFirestore.getInstance();
 
         // Initialize Stripe instance
-        stripe = new Stripe(getContext(), "pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E"); // Replace with your actual key
+        PaymentConfiguration.init(getContext(), "pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E"); // Replace with your actual key
 
         auth = FirebaseAuth.getInstance();
 

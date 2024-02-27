@@ -3,19 +3,24 @@ package com.example.parkme;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.example.parkme.model.Bookings;
 import com.example.parkme.model.CardDetails;
 import com.example.parkme.norm.VehicleInfoActivity;
 import com.google.android.material.button.MaterialButton;
@@ -35,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class BookingProcessActivity extends AppCompatActivity {
@@ -445,22 +451,54 @@ public class BookingProcessActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // Handle failure here
                 });
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        Date startTime = null;
+        Date endTime = null;
+        try {
+            startTime = sdf.parse(dateEditText.getText().toString() + " " + startTimeEditText.getText().toString());
+            endTime = sdf.parse(dateEditText.getText().toString() + " " + endTimeEditText.getText().toString());
+        } catch (ParseException e) {
+            showError("Invalid date or time format.");
+            return;
+        }
+        long durationInMillis = endTime.getTime() - startTime.getTime();
+        int durationInHours = (int) (durationInMillis / (1000 * 60 * 60));
+        double ratePerHour = parkingSpot.getPrice(); // Assuming you have a method to get the price per hour for the parking spot
+        double totalPrice = durationInHours * ratePerHour;
 
-        // Create booking details
-        Map<String, Object> bookingDetails = new HashMap<>();
-        bookingDetails.put("parkingSpotId", parkingSpot.getName());
-        bookingDetails.put("userId", FirebaseAuth.getInstance().getCurrentUser().getUid());
-        bookingDetails.put("date", dateEditText.getText().toString());
-        bookingDetails.put("startTime", startTimeEditText.getText().toString());
-        bookingDetails.put("endTime", endTimeEditText.getText().toString());
-        bookingDetails.put("duration", durationEditText.getText().toString());
-        // Add other necessary fields
+        // Apply VAT and service fee
+        double vatPercentage = 20; // VAT is 20%
+        double serviceFee = 0.40; // Flat service fee
+        double vatFee = totalPrice * (vatPercentage / 100);
+        double totalPriceIncludingVAT = totalPrice + vatFee;
+        double finalTotalPrice = totalPriceIncludingVAT + serviceFee;
+
+        // Create a new Booking object
+        Bookings booking = new Bookings();
+        booking.setUserId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        booking.setParkingSpotId(parkingSpot.getName());
+        booking.setStartTime(startTime);
+        booking.setEndTime(endTime);
+        booking.setDuration(durationInHours);
+        booking.setTotalPrice(finalTotalPrice); // Updated to include VAT and service fee
+        // Assuming you have a method to determine the booking status
+        booking.setStatus(determineBookingStatus(startTime, endTime)); // Implement this method based on your logic
+
+        // Convert Booking object to Map to save in Firestore (if direct saving of objects isn't supported)
+        Map<String, Object> bookingMap = new HashMap<>();
+        bookingMap.put("userId", booking.getUserId());
+        bookingMap.put("parkingSpotId", booking.getParkingSpotId());
+        bookingMap.put("startTime", booking.getStartTime());
+        bookingMap.put("endTime", booking.getEndTime());
+        bookingMap.put("duration", booking.getDuration());
+        bookingMap.put("totalPrice", booking.getTotalPrice()); // This now includes VAT and service fee
+        bookingMap.put("status", booking.getStatus());
 
         // Save booking details to Firestore
-        firestore.collection("Bookings").add(bookingDetails)
+        firestore.collection("Bookings").add(bookingMap)
                 .addOnSuccessListener(documentReference -> {
                     // Generate and display the booking confirmation receipt
-                    String confirmationReceipt = generateConfirmationReceipt(bookingDetails);
+                    String confirmationReceipt = generateConfirmationReceipt(bookingMap);
                     Bitmap qrCodeBitmap = generateQRCode(confirmationReceipt);
                     displayConfirmation(confirmationReceipt, qrCodeBitmap);
 
@@ -471,12 +509,40 @@ public class BookingProcessActivity extends AppCompatActivity {
                 });
     }
 
-    private String generateConfirmationReceipt(Map<String, Object> bookingDetails) {
+
+    private String determineBookingStatus(Date startTime, Date endTime) {
+        Date now = new Date();
+        if (now.before(startTime)) {
+            return Bookings.BookingStatus.UPCOMING.name();
+        } else if (now.after(startTime) && now.before(endTime)) {
+            return Bookings.BookingStatus.INPROGRESS.name();
+        } else if (now.after(endTime)) {
+            return Bookings.BookingStatus.COMPLETED.name();
+        } else {
+            return "UNKNOWN"; // Consider using an appropriate status or handling this case differently
+        }
+    }
+
+    private String generateConfirmationReceipt(Map<String, Object> bookingMap) {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        // Extract the Date objects
+        Date startDate = (Date) bookingMap.get("startTime");
+        Date endDate = (Date) bookingMap.get("endTime");
+
+        // Format the Date objects to String
+        String formattedDate = sdfDate.format(startDate); // Assuming both dates are the same day
+        String formattedStartTime = sdfTime.format(startDate);
+        String formattedEndTime = sdfTime.format(endDate);
+
         // Generate a confirmation receipt based on bookingDetails
-        return "Booking Confirmed: " + bookingDetails.get("parkingSpotId") +
-                " on " + bookingDetails.get("date") +
-                " from " + bookingDetails.get("startTime") +
-                " to " + bookingDetails.get("endTime");
+        return "Booking Confirmed: " + bookingMap.get("parkingSpotId") +
+                " on " + formattedDate +
+                " from " + formattedStartTime +
+                " to " + formattedEndTime +
+                ". Duration: " + bookingMap.get("duration") + " hours" +
+                ". Total Price: " + bookingMap.get("totalPrice") + " GBP";
     }
 
     private Bitmap generateQRCode(String text) {
@@ -499,15 +565,26 @@ public class BookingProcessActivity extends AppCompatActivity {
     }
 
     private void displayConfirmation(String confirmationReceipt, Bitmap qrCodeBitmap) {
-        TextView confirmationTextView = findViewById(R.id.confirmationDetailsTextView);
-        ImageView qrCodeImageView = findViewById(R.id.qrCodeImageView);
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.receipt);
 
+        TextView confirmationTextView = dialog.findViewById(R.id.bookingDetails);
+        ImageView qrCodeImageView = dialog.findViewById(R.id.qrCode);
+        Button confirmButton = dialog.findViewById(R.id.confirmButton); // Acknowledge button in your dialog
+
+        // Set the content
         confirmationTextView.setText(confirmationReceipt);
-        confirmationTextView.setVisibility(View.VISIBLE);
-
         qrCodeImageView.setImageBitmap(qrCodeBitmap);
-        qrCodeImageView.setVisibility(View.VISIBLE);
+
+        // Set the button click listener
+        confirmButton.setOnClickListener(v -> {
+            dialog.dismiss(); // Dismiss the dialog
+            finish(); // Finish and dismiss the BookingProcessActivity
+        });
+
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(false); // Make dialog non-cancelable if you want to force user interaction
+        dialog.show();
     }
-
-
 }
