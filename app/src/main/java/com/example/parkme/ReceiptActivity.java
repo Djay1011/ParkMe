@@ -81,18 +81,16 @@ public class ReceiptActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    // Set the parkingSpotName, bookingId, and status directly as they are expected to be Strings
                     parkingSpotNameTextView.setText(document.getString("parkingSpotId"));
                     statusTextView.setText(document.getString("status"));
 
-                    // For date, startTime, and endTime, first check if they are stored as Timestamps
                     SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                     SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
-                    Timestamp startDateTimestamp = document.getTimestamp("startTime"); // Adjusted to startTime for consistency
+                    Timestamp startDateTimestamp = document.getTimestamp("startTime");
                     if (startDateTimestamp != null) {
                         Date startDate = startDateTimestamp.toDate();
-                        dateTextView.setText(dateFormat.format(startDate)); // Assuming you want to display the start date
+                        dateTextView.setText(dateFormat.format(startDate));
                     }
 
                     Timestamp startTimeTimestamp = document.getTimestamp("startTime");
@@ -108,7 +106,7 @@ public class ReceiptActivity extends AppCompatActivity {
                     }
 
                     // Retrieve and display the duration in hours
-                    Long duration = document.getLong("duration"); // Firestore stores integers as Long
+                    Long duration = document.getLong("duration");
                     if (duration != null) {
                         durationTextView.setText(String.format(Locale.getDefault(), "%d hours", duration));
                     } else {
