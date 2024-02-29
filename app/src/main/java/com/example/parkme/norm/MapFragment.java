@@ -9,10 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListPopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -49,8 +51,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
@@ -61,6 +65,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private FusedLocationProviderClient fusedLocationProviderClient;
     private SearchView searchView;
     private PlacesClient placesClient;
+    private ListPopupWindow listPopupWindow;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -73,7 +78,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         initializeMapFragment();
         setupSearchView(view);
+        setupListPopupWindow(view);
+        
         return view;
+    }
+
+    private void setupListPopupWindow(View view) {
+        listPopupWindow = new ListPopupWindow(requireContext());
+        listPopupWindow.setAnchorView(searchView);
+        listPopupWindow.setWidth(ListPopupWindow.MATCH_PARENT);
+        listPopupWindow.setHeight(ListPopupWindow.WRAP_CONTENT);
+        listPopupWindow.setOnItemClickListener((parent, view1, position, id) -> {
+            String selectedItem = (String) parent.getItemAtPosition(position);
+            searchView.setQuery(selectedItem, true);
+            listPopupWindow.dismiss();
+        });
     }
 
     private void setupSearchView(View view) {
@@ -81,47 +100,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                        .setQuery(query)
-                        .build();
-
-                placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
-                    for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
-                        Log.i(TAG, prediction.getPlaceId());
-                        Log.i(TAG, prediction.getPrimaryText(null).toString());
-
-                        fetchPlaceDetails(prediction.getPlaceId());
-                        break; // Take the first prediction
-                    }
-                }).addOnFailureListener((exception) -> {
-                    if (exception instanceof ApiException) {
-                        ApiException apiException = (ApiException) exception;
-                        Log.e(TAG, "Place not found: " + apiException.getStatusCode());
-                    }
-                });
-
-                return true;
+                searchForLocation(query);
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (!newText.isEmpty()) {
-                    FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                            .setQuery(newText)
-                            .build();
-
-                    placesClient.findAutocompletePredictions(request).addOnSuccessListener(response -> {
-                        // Here, process the response to display suggestions.
-                        // This typically involves updating an adapter with the new suggestions
-                        // and possibly displaying them in a ListView or RecyclerView.
-                    }).addOnFailureListener(exception -> {
-                        if (exception instanceof ApiException) {
-                            ApiException apiException = (ApiException) exception;
-                            Log.e(TAG, "Place not found: " + apiException.getStatusCode());
-                        }
-                    });
+                    updateLiveSuggestions(newText);
                 }
                 return false;
+            }
+        });
+    }
+
+    private void searchForLocation(String query) {
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setQuery(query)
+                .build();
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener((response) -> {
+            for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                Log.i(TAG, prediction.getPlaceId());
+                Log.i(TAG, prediction.getPrimaryText(null).toString());
+
+                fetchPlaceDetails(prediction.getPlaceId());
+                break;
+            }
+        }).addOnFailureListener((exception) -> {
+            if (exception instanceof ApiException) {
+                ApiException apiException = (ApiException) exception;
+                Log.e(TAG, "Place not found: " + apiException.getStatusCode());
             }
         });
     }
@@ -145,6 +154,36 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 Log.e(TAG, "Place not found: " + apiException.getStatusCode());
             }
         });
+    }
+
+    private void updateLiveSuggestions(String newText) {
+        FindAutocompletePredictionsRequest predictionsRequest = FindAutocompletePredictionsRequest.builder()
+                .setQuery(newText)
+                .build();
+
+        placesClient.findAutocompletePredictions(predictionsRequest).addOnSuccessListener(response -> {
+            List<String> suggestions = new ArrayList<>();
+            for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                suggestions.add(prediction.getFullText(null).toString());
+            }
+            updateSuggestionsUI(suggestions);
+        }).addOnFailureListener(exception -> {
+            if (exception instanceof ApiException) {
+                ApiException apiException = (ApiException) exception;
+                Log.e(TAG, "Error getting place predictions: " + apiException.getStatusCode());
+            }
+        });
+    }
+
+    private void updateSuggestionsUI(List<String> suggestions) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, suggestions);
+        listPopupWindow.setAdapter(adapter);
+
+        if (!suggestions.isEmpty()) {
+            listPopupWindow.show();
+        } else {
+            listPopupWindow.dismiss();
+        }
     }
 
     private void updateMapLocation(LatLng latLng) {
