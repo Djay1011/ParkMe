@@ -4,35 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     tools:context=".BookingProcessActivity">
 
-    <ImageView
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/arrow_back"
-        android:contentDescription="@string/back_button"
-        app:layout_constraintTop_toTopOf="parent"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="47dp"
+        android:background="@color/blue"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:padding="16dp"
-        android:clickable="true"
-        android:focusable="true" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/arrow_back"
+        app:navigationIconTint="@color/off_white"
+        app:title="Select and Confirm"
+        app:titleCentered="true"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Body2"
+        app:titleTextColor="@color/off_white" />
 
     <TextView
         android:id="@+id/parkingSpaceName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Parking Space Name"
-        android:textSize="20sp"
         android:textStyle="bold"
+        android:textSize="20sp"
         android:gravity="center"
         style="@style/TextAppearance.Material3.HeadlineMedium"
-        app:layout_constraintTop_toBottomOf="@id/backButton"
-        app:layout_constraintStart_toEndOf="@id/backButton"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="20dp" />
 
 
     <com.google.android.material.textfield.TextInputLayout
@@ -40,7 +41,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Select Date"
+        android:hint="@string/select_date"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:endIconDrawable="@drawable/calendar"
         app:endIconMode="custom"
         app:layout_constraintEnd_toEndOf="parent"
@@ -63,11 +66,13 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/viewDate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/viewEndTime"
         android:layout_marginTop="16dp"
-        android:hint="Start Time">
+        android:hint="@string/start_time">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/startTime"
@@ -82,11 +87,13 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/viewDate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/viewStartTime"
         android:layout_marginTop="16dp"
-        android:hint="End Time">
+        android:hint="@string/end_time">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/endTime"
@@ -101,6 +108,8 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/viewEndTime"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -119,13 +128,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Vehicle Info"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/viewDuration"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp"/>
 
     <TextView
         android:id="@+id/vehicleDetails"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="Add Vehicle Details"
         android:padding="16dp"
@@ -141,6 +152,8 @@
         style="@style/TextAppearance.Material3.BodyMedium"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         android:text="Payment Method"
         app:layout_constraintTop_toBottomOf="@id/vehicleDetails"
         app:layout_constraintStart_toStartOf="parent"
@@ -148,8 +161,10 @@
 
     <TextView
         android:id="@+id/currentPaymentMethod"
-        android:layout_width="0dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         android:text="No payment method added"
         android:padding="16dp"
         app:layout_constraintTop_toBottomOf="@id/paymentMethodLabel"
@@ -158,8 +173,10 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/feeBreakdownLayout"
-        android:layout_width="0dp"
+        android:layout_width="370dp"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
         app:layout_constraintTop_toBottomOf="@id/currentPaymentMethod"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -170,18 +187,20 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="VAT Fee:"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/vatFeeValue"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/serviceFeeLabel"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="10dp"/>
 
         <TextView
             android:id="@+id/vatFeeValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="£0.00"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/vatFee"/>
@@ -191,18 +210,20 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Service Fee:"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/serviceFeeValue"
             app:layout_constraintTop_toBottomOf="@id/vatFee"
             app:layout_constraintBottom_toTopOf="@id/totalPriceLabel"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="10dp"/>
 
         <TextView
             android:id="@+id/serviceFeeValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="£0.00"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.BodyMedium"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/serviceFeeLabel"/>
@@ -213,18 +234,20 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Total Price:"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.HeadlineSmall"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/totalPrice"
             app:layout_constraintTop_toBottomOf="@id/serviceFeeLabel"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginEnd="8dp"/>
+            android:layout_marginEnd="10dp"/>
 
         <TextView
             android:id="@+id/totalPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="£0.00"
+            android:padding="5dp"
             style="@style/TextAppearance.Material3.HeadlineSmall"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBaseline_toBaselineOf="@id/totalPriceLabel"/>
@@ -247,35 +270,14 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/bookBtn"
         style="@style/Widget.Material3.Button.ElevatedButton"
-        android:layout_width="0dp"
+        android:layout_width="280dp"
         android:layout_height="wrap_content"
         android:text="Book Now"
+        android:textColor="@color/off_white"
+        android:backgroundTint="@color/blue"
         app:layout_constraintTop_toBottomOf="@+id/errorTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="20dp" />
 
-    <!-- Confirmation Details TextView -->
-    <TextView
-        android:id="@+id/confirmationDetailsTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/bookBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- QR Code ImageView -->
-    <ImageView
-        android:id="@+id/qrCodeImageView"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/confirmationDetailsTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

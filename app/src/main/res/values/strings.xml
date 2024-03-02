@@ -43,4 +43,7 @@
     <string name="enter_reg">ENTER REG</string>
     <string name="add_vehicle">Add Vehicle</string>
     <string name="back_button">Backbtn</string>
+    <string name="select_date">Select Date</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
 </resources>

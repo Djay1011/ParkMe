@@ -23,12 +23,15 @@ import android.widget.TimePicker;
 import com.example.parkme.model.Bookings;
 import com.example.parkme.model.CardDetails;
 import com.example.parkme.norm.VehicleInfoActivity;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -81,7 +84,6 @@ public class BookingProcessActivity extends AppCompatActivity {
         parkingSpaceName = findViewById(R.id.parkingSpaceName);
         errorTextView = findViewById(R.id.errorTextView);
         bookButton = findViewById(R.id.bookBtn);
-        ImageView backButton = findViewById(R.id.backButton);
 
         parkingSpot = getIntent().getParcelableExtra("PARKING_SPOT");
         if (parkingSpot != null) {
@@ -92,12 +94,15 @@ public class BookingProcessActivity extends AppCompatActivity {
             parkingSpaceName.setText("No Parking Spot Selected");
         }
 
-        backButton.setOnClickListener(new View.OnClickListener() {
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish(); // Finish the activity, going back to the previous screen
+                finish(); // Finish this activity and go back to the previous one
             }
         });
+
 
         dateEditText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -436,24 +441,30 @@ public class BookingProcessActivity extends AppCompatActivity {
     }
 
     private void confirmBooking() {
-        // Increment the booked spots and update the parking spot in Firestore
-        int newBookedSpots = parkingSpot.getBookedSpots() + 1;
-        parkingSpot.setBookedSpots(newBookedSpots);
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        DocumentReference spotRef = firestore.collection("ParkingSpot").document(parkingSpot.getId());
 
-        Map<String, Object> updateMap = new HashMap<>();
-        updateMap.put("bookedSpots", newBookedSpots);
+    firestore.runTransaction(transaction -> {
+                    DocumentSnapshot snapshot = transaction.get(spotRef);
+                    long newBookedSpots = snapshot.getLong("bookedSpots") != null ? snapshot.getLong("bookedSpots") + 1 : 1;
+                    if (newBookedSpots > parkingSpot.getCapacity()) {
+                        runOnUiThread(() -> {
+                            bookButton.setText("Unavailable");
+                            bookButton.setEnabled(false);
+                            showError("Parking spot is full.");
+                        });
+                        throw new FirebaseFirestoreException("Parking spot capacity exceeded", FirebaseFirestoreException.Code.ABORTED);
+                    }
+                    transaction.update(spotRef, "bookedSpots", newBookedSpots);
+                    return null;
+                }).addOnSuccessListener(aVoid -> createBookingAndUpdateUI())
+                .addOnFailureListener(e -> showError("Booking failed. Please try again. Error: " + e.getMessage()));
+    }
 
-        firestore.collection("ParkingSpot").document(parkingSpot.getName())
-                .update(updateMap)
-                .addOnSuccessListener(aVoid -> {
-                    // Successfully updated the parking spot information
-                })
-                .addOnFailureListener(e -> {
-                    // Handle failure here
-                });
+    private void createBookingAndUpdateUI() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        Date startTime = null;
-        Date endTime = null;
+        Date startTime, endTime;
+
         try {
             startTime = sdf.parse(dateEditText.getText().toString() + " " + startTimeEditText.getText().toString());
             endTime = sdf.parse(dateEditText.getText().toString() + " " + endTimeEditText.getText().toString());
@@ -461,51 +472,38 @@ public class BookingProcessActivity extends AppCompatActivity {
             showError("Invalid date or time format.");
             return;
         }
+
         long durationInMillis = endTime.getTime() - startTime.getTime();
         int durationInHours = (int) (durationInMillis / (1000 * 60 * 60));
-        double ratePerHour = parkingSpot.getPrice(); // Assuming you have a method to get the price per hour for the parking spot
+        double ratePerHour = parkingSpot.getPrice();
         double totalPrice = durationInHours * ratePerHour;
 
-        // Apply VAT and service fee
-        double vatPercentage = 20; // VAT is 20%
-        double serviceFee = 0.40; // Flat service fee
-        double vatFee = totalPrice * (vatPercentage / 100);
-        double totalPriceIncludingVAT = totalPrice + vatFee;
-        double finalTotalPrice = totalPriceIncludingVAT + serviceFee;
+        double vatPercentage = 20; // Assuming a 20% VAT rate
+        double serviceFee = 0.40; // Assuming there's a fixed service fee
+        double vatAmount = totalPrice * vatPercentage / 100;
+        double finalTotalPrice = totalPrice + vatAmount + serviceFee;
 
-        // Create a new Booking object
         Bookings booking = new Bookings();
         booking.setUserId(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        booking.setParkingSpotId(parkingSpot.getName());
+        booking.setParkingSpotId(parkingSpot.getId()); // Assuming getId() gets the Firestore document ID or unique identifier.
+        booking.setParkingSpotName(parkingSpot.getName()); // Setting the name of the parking spot.
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
         booking.setDuration(durationInHours);
-        booking.setTotalPrice(finalTotalPrice); // Updated to include VAT and service fee
-        // Assuming you have a method to determine the booking status
-        booking.setStatus(determineBookingStatus(startTime, endTime)); // Implement this method based on your logic
+        booking.setTotalPrice(finalTotalPrice);
+        booking.setStatus(determineBookingStatus(startTime, endTime)); // Ensure this method is correctly implemented.
 
-        // Convert Booking object to Map to save in Firestore (if direct saving of objects isn't supported)
-        Map<String, Object> bookingMap = new HashMap<>();
-        bookingMap.put("userId", booking.getUserId());
-        bookingMap.put("parkingSpotId", booking.getParkingSpotId());
-        bookingMap.put("startTime", booking.getStartTime());
-        bookingMap.put("endTime", booking.getEndTime());
-        bookingMap.put("duration", booking.getDuration());
-        bookingMap.put("totalPrice", booking.getTotalPrice()); // This now includes VAT and service fee
-        bookingMap.put("status", booking.getStatus());
+        // Ensure this method is implemented correctly
 
-        // Save booking details to Firestore
+        Map<String, Object> bookingMap = booking.toMap(); // Convert booking object to a map for Firestore upload
+
         firestore.collection("Bookings").add(bookingMap)
                 .addOnSuccessListener(documentReference -> {
-                    // Generate and display the booking confirmation receipt
-                    String confirmationReceipt = generateConfirmationReceipt(bookingMap);
-                    Bitmap qrCodeBitmap = generateQRCode(confirmationReceipt);
-                    displayConfirmation(confirmationReceipt, qrCodeBitmap);
-
-                    // Optionally, send the confirmation receipt via email or another method
+                    // Update the UI to show the booking confirmation
+                    displayConfirmation(booking);
                 })
                 .addOnFailureListener(e -> {
-                    showError("Booking failed. Please try again.");
+                    showError("Failed to save booking. Please try again.");
                 });
     }
 
@@ -523,68 +521,68 @@ public class BookingProcessActivity extends AppCompatActivity {
         }
     }
 
-    private String generateConfirmationReceipt(Map<String, Object> bookingMap) {
-        SimpleDateFormat sdfDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-        SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    private void displayConfirmation(Bookings booking) {
+        Dialog confirmationDialog = new Dialog(this); // Use 'getContext()' if this is a fragment
+        confirmationDialog.setContentView(R.layout.receipt);
 
-        // Extract the Date objects
-        Date startDate = (Date) bookingMap.get("startTime");
-        Date endDate = (Date) bookingMap.get("endTime");
+        // Initialize the views from the layout
+        TextView bookingDetailsTextView = confirmationDialog.findViewById(R.id.bookingDetails);
+        ImageView qrCodeImageView = confirmationDialog.findViewById(R.id.qrCode);
 
-        // Format the Date objects to String
-        String formattedDate = sdfDate.format(startDate); // Assuming both dates are the same day
-        String formattedStartTime = sdfTime.format(startDate);
-        String formattedEndTime = sdfTime.format(endDate);
+        // Format the booking details and set them to the TextView
+        String bookingDetails = formatBookingDetails(booking);
+        bookingDetailsTextView.setText(bookingDetails);
 
-        // Generate a confirmation receipt based on bookingDetails
-        return "Booking Confirmed: " + bookingMap.get("parkingSpotId") +
-                " on " + formattedDate +
-                " from " + formattedStartTime +
-                " to " + formattedEndTime +
-                ". Duration: " + bookingMap.get("duration") + " hours" +
-                ". Total Price: " + bookingMap.get("totalPrice") + " GBP";
+        // Generate the QR code (assuming you have a method to do this)
+        Bitmap qrCodeBitmap = generateQRCode(bookingDetails);
+        if (qrCodeBitmap != null) {
+            qrCodeImageView.setImageBitmap(qrCodeBitmap);
+        } else {
+            // Handle the case where the QR code generation fails
+            qrCodeImageView.setVisibility(View.GONE); // Or show a default image
+        }
+
+        // Set the button click listener
+        Button confirmButton = confirmationDialog.findViewById(R.id.confirmButton);
+        confirmButton.setOnClickListener(v -> {
+            confirmationDialog.dismiss();
+            finish();
+            // Handle the confirmation action (e.g., navigate to another activity or close the current one)
+        });
+
+        // Display the dialog
+        confirmationDialog.show();
     }
 
+    private String formatBookingDetails(Bookings booking) {
+        // Format your booking details into a human-readable string
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        return "ID: " + booking.getBookingId() + "\n"
+                + "Spot Name: " + booking.getParkingSpotName() + "\n"  // Including the parking spot name in the details
+                + "Start: " + dateFormat.format(booking.getStartTime()) + "\n"
+                + "End: " + dateFormat.format(booking.getEndTime()) + "\n"
+                + "Price: $" + String.format("%.2f", booking.getTotalPrice());  // Ensuring the price is formatted to two decimal places
+    }
+
+
     private Bitmap generateQRCode(String text) {
+        // Implement QR code generation logic here
+        // This is a placeholder for the actual QR code generation logic
         try {
-            QRCodeWriter writer = new QRCodeWriter();
-            BitMatrix bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
             int width = bitMatrix.getWidth();
             int height = bitMatrix.getHeight();
-            Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
-            return bmp;
+            return bitmap;
         } catch (WriterException e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private void displayConfirmation(String confirmationReceipt, Bitmap qrCodeBitmap) {
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.receipt);
-
-        TextView confirmationTextView = dialog.findViewById(R.id.bookingDetails);
-        ImageView qrCodeImageView = dialog.findViewById(R.id.qrCode);
-        Button confirmButton = dialog.findViewById(R.id.confirmButton); // Acknowledge button in your dialog
-
-        // Set the content
-        confirmationTextView.setText(confirmationReceipt);
-        qrCodeImageView.setImageBitmap(qrCodeBitmap);
-
-        // Set the button click listener
-        confirmButton.setOnClickListener(v -> {
-            dialog.dismiss(); // Dismiss the dialog
-            finish(); // Finish and dismiss the BookingProcessActivity
-        });
-
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialog.setCancelable(false); // Make dialog non-cancelable if you want to force user interaction
-        dialog.show();
     }
 }

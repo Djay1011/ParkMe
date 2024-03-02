@@ -45,7 +45,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
         // Format the date for display
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-        holder.parkingSpotIdView.setText(booking.getParkingSpotId());
+        holder.parkingSpotIdView.setText(booking.getParkingSpotName());
         holder.dateView.setText(dateFormat.format(booking.getStartTime())); // Assuming startTime has the date
         holder.totalPriceView.setText(String.format(Locale.getDefault(), "£%.2f", booking.getTotalPrice())); // Format the price to two decimal places
         holder.statusView.setText(booking.getStatus());

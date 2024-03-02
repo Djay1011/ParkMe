@@ -2,11 +2,14 @@ package com.example.parkme.model;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bookings {
     private String bookingId;
     private String userId;
     private String parkingSpotId;
+    private String parkingSpotName;
     private String cardId;
     private Date startTime;
     private Date endTime;
@@ -20,10 +23,11 @@ public class Bookings {
     public Bookings() {
     }
 
-    public Bookings(String bookingId, String userId, String parkingSpotId, String cardId, Date startTime, Date endTime, int duration, double totalPrice, String status) {
+    public Bookings(String bookingId, String userId, String parkingSpotId, String parkingSpotName, String cardId, Date startTime, Date endTime, int duration, double totalPrice, String status) {
         this.bookingId = bookingId;
         this.userId = userId;
         this.parkingSpotId = parkingSpotId;
+        this.parkingSpotName = parkingSpotName;
         this.cardId = cardId;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -54,6 +58,14 @@ public class Bookings {
 
     public void setParkingSpotId(String parkingSpotId) {
         this.parkingSpotId = parkingSpotId;
+    }
+
+    public String getParkingSpotName() {
+        return parkingSpotName;
+    }
+
+    public void setParkingSpotName(String parkingSpotName) {
+        this.parkingSpotName = parkingSpotName;
     }
 
     public String getCardId() {
@@ -102,5 +114,20 @@ public class Bookings {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("bookingId", bookingId);
+        result.put("userId", userId);
+        result.put("parkingSpotId", parkingSpotId);
+        result.put("parkingSpotName", parkingSpotName);
+        result.put("cardId", cardId);
+        result.put("startTime", startTime);
+        result.put("endTime", endTime);
+        result.put("duration", duration);
+        result.put("totalPrice", totalPrice);
+        result.put("status", status);
+        return result;
     }
 }

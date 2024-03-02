@@ -81,7 +81,7 @@ public class ReceiptActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    parkingSpotNameTextView.setText(document.getString("parkingSpotId"));
+                    parkingSpotNameTextView.setText(document.getString("parkingSpotName"));
                     statusTextView.setText(document.getString("status"));
 
                     SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
