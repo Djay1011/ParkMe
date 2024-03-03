@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.example.parkme.R;
 import com.example.parkme.model.Vehicle;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -32,7 +33,6 @@ public class VehicleInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vehicle_info);
 
-        ImageButton backButton = findViewById(R.id.backButton);
         editTextVehicleReg = findViewById(R.id.editTextVehicleReg);
         textViewPlateNumber = findViewById(R.id.textViewPlateNumber);
         buttonAddVehicle = findViewById(R.id.buttonAddVehicle); // Use the class member, not a local variable
@@ -48,7 +48,9 @@ public class VehicleInfoActivity extends AppCompatActivity {
         buttonAddVehicle.setOnClickListener(view -> addVehicle());
         deleteIcon.setOnClickListener(view -> deleteVehiclePlate());
 
-        backButton.setOnClickListener(view -> onBackPressed());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         displayVehiclePlate();
     }

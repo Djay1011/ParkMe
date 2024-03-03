@@ -321,10 +321,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         Button btnBookNow = bottomSheetView.findViewById(R.id.bottom_sheet_book_now);
         btnBookNow.setOnClickListener(v -> {
-            // Handle booking logic
             bottomSheetDialog.dismiss();
             showBookingBottomSheet(spot);
         });
+
+        ImageView dismissIcon = bottomSheetView.findViewById(R.id.remove);
+        dismissIcon.setOnClickListener(v -> bottomSheetDialog.dismiss());
+
     }
 
     private void showBookingBottomSheet(ParkingSpot spot) {

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -52,6 +53,9 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
         Button addCardButton = view.findViewById(R.id.addCardButton);
         addCardButton.setOnClickListener(v -> addCard());
 
+        ImageView dismissIcon = view.findViewById(R.id.remove);
+        dismissIcon.setOnClickListener(v -> dismiss());
+
         return view;
     }
 
@@ -66,13 +70,14 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
 
                 @Override
                 public void onError(@NonNull Exception e) {
-                    // Handle error (e.g., show an error message to the user)
+                    Toast.makeText(getContext(), "Error creating card token: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         } else {
-            // Card details are not valid (e.g., show an error message to the user)
+            Toast.makeText(getContext(), "Invalid card data. Please check the details and try again.", Toast.LENGTH_LONG).show();
         }
     }
+
 
     private void saveCardDetails(Token token) {
         FirebaseUser currentUser = auth.getCurrentUser();
