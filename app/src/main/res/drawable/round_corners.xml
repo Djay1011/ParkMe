@@ -1,14 +1,23 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/light_grey"/>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="?attr/colorSurface" />
 
-    <corners android:topLeftRadius="16dp"
-        android:topRightRadius="16dp"/>
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
 
-    <padding android:right="16dp"
-        android:left="16dp"
-        android:top="16dp"
-        android:bottom="16dp"/>
+    <item android:bottom="-3dp" android:right="-1dp" android:left="-1dp">
+        <shape>
+            <solid android:color="@android:color/transparent" />
 
-    <stroke android:width="1dp"
-        android:color="@color/Lighter_blue"/>
-</shape>
+            <stroke
+                android:width="1dp"
+                android:color="?attr/colorOnSurface" />
+
+            <corners
+                android:topLeftRadius="16dp"
+                android:topRightRadius="16dp" />
+        </shape>
+    </item>
+</layer-list>

@@ -22,6 +22,7 @@ import com.example.parkme.R;
 import com.example.parkme.SharedViewModel;
 import com.example.parkme.model.CardDetails;
 import com.example.parkme.utils.FirebaseManager;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 
@@ -32,6 +33,7 @@ public class WalletFragment extends Fragment {
     private FirebaseManager firebaseManager;
     private ProgressBar progressBar;
     private SharedViewModel sharedViewModel;
+    private MaterialButton addCardButton;
     private ParkingSpot parkingSpot; // This should be set or retrieved from somewhere
 
     @Override
@@ -68,7 +70,7 @@ public class WalletFragment extends Fragment {
     }
 
     private void initializeAddCardButton(View view) {
-        ImageView addCardButton = view.findViewById(R.id.iconAddCard);
+        addCardButton = view.findViewById(R.id.addCardButton);
         addCardButton.setOnClickListener(v -> showAddCardDialog());
     }
 

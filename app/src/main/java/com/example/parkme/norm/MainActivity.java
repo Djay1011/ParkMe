@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (itemId == R.id.nav_map) {
             selectedFragment = new MapFragment();
-        } else if (itemId == R.id.nav_search) {
+        } else if (itemId == R.id.nav_wallet) {
             selectedFragment = new WalletFragment();
         } else if (itemId == R.id.nav_notification) {
             selectedFragment = new NotificationFragment();

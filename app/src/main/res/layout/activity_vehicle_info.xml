@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="47dp"
-        android:background="@color/blue"
+        android:background="?attr/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -19,7 +19,8 @@
         app:title="VehicleInfo"
         app:titleCentered="true"
         app:titleTextAppearance="@style/TextAppearance.AppCompat.Body2"
-        app:titleTextColor="@color/off_white" />
+        app:titleTextColor="@color/white"
+        app:elevation="4dp" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutVehicleReg"

@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -44,8 +45,11 @@ public class ReceiptActivity extends AppCompatActivity {
         totalTextView = findViewById(R.id.totalTextView); // New TextView for Total
         cancelBookingButton = findViewById(R.id.cancelBookingButton);
         qrCodeImageView = findViewById(R.id.qrCodeImageView);
-        ImageView backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(view -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> {
+            onBackPressed();
+        });
 
         String bookingId = getIntent().getStringExtra("bookingId");
         if (bookingId != null) {

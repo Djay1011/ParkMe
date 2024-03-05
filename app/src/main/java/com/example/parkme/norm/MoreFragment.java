@@ -8,12 +8,15 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import com.example.parkme.ProfileActivity;
 import com.example.parkme.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -38,9 +41,13 @@ public class MoreFragment extends Fragment {
         TextView userNameTextView = view.findViewById(R.id.userName);
         fetchAndDisplayUserFirstName(userNameTextView);
 
+        SwitchMaterial darkModeSwitch = view.findViewById(R.id.darkModeSwitch);
+        // Set the switch based on the current theme mode
+        darkModeSwitch.setChecked(AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES);
+        darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> toggleDarkMode(isChecked));
+
         // Set up listeners
         view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
-        view.findViewById(R.id.darkModeSwitch).setOnClickListener(v -> toggleDarkMode());
         view.findViewById(R.id.notificationSwitch).setOnClickListener(v -> toggleNotifications());
         view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
         view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
@@ -49,6 +56,8 @@ public class MoreFragment extends Fragment {
         /*view.findViewById(R.id.aboutUsLayout).setOnClickListener(v -> aboutUs());*/
         view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
     }
+
+
 
     private void fetchAndDisplayUserFirstName(TextView userNameTextView) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -80,8 +89,12 @@ public class MoreFragment extends Fragment {
         startActivity(intent);
     }
 
-    private void toggleDarkMode() {
-        // Code to toggle dark mode
+    private void toggleDarkMode(boolean isEnabled) {
+        if (isEnabled) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     private void toggleNotifications() {
@@ -94,7 +107,8 @@ public class MoreFragment extends Fragment {
     }
 
     private void viewPaymentMethod() {
-        // Code to view payment method
+        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_wallet);
     }
 
     private void viewSecurityPrivacy() {

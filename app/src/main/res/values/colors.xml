@@ -23,4 +23,5 @@
     <color name="colorInProgress">#4CAF50</color> <!-- Green -->
     <color name="colorCompleted">#4CAF50</color> <!-- Green -->
     <color name="colorCancellation">#F44336</color> <!-- Red -->
+
 </resources>

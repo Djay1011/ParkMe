@@ -33,8 +33,6 @@
         android:layout_width="57dp"
         android:layout_height="60dp"
         android:src="@drawable/ic_map"
-        android:visibility="visible"
-        app:backgroundTint="@color/green"
         app:layout_constraintBottom_toBottomOf="@id/bottom_navigation"
         app:layout_constraintLeft_toLeftOf="@id/bottom_navigation"
         app:layout_constraintRight_toRightOf="@id/bottom_navigation"

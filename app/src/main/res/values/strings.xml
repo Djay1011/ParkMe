@@ -15,7 +15,7 @@
     <string name="don_t_have_an_account_sign_up">Don’t have an account? Sign Up</string>
     <string name="title_activity_maps">MapsActivity</string>
     <string name="search">Search</string>
-    <string name="book">Bookings</string>
+    <string name="book">My Bookings</string>
     <string name="notification">Notification</string>
     <string name="more">More</string>
     <!-- TODO: Remove or change this placeholder text -->
@@ -46,4 +46,5 @@
     <string name="select_date">Select Date</string>
     <string name="start_time">Start Time</string>
     <string name="end_time">End Time</string>
+    <string name="wallet">My Wallet</string>
 </resources>

@@ -1,7 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme for Material 3 -->
     <style name="Base.Theme.ParkMe" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your theme here using Material 3 color system. -->
 
         <!-- Primary color (used for app bars, buttons, etc.) -->
         <item name="colorPrimary">@color/blue</item>
@@ -30,5 +28,9 @@
         <!-- ... other shape appearances ... -->
     </style>
 
-    <style name="Theme.ParkMe" parent="Base.Theme.ParkMe" />
+    <style name="Theme.ParkMe" parent="Base.Theme.ParkMe">
+
+    </style>
+
+
 </resources>
