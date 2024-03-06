@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
+import com.example.parkme.ContactUsActivity;
 import com.example.parkme.ProfileActivity;
 import com.example.parkme.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -116,7 +117,8 @@ public class MoreFragment extends Fragment {
     }
 
     private void contactUs() {
-        // Code to handle contact us
+        Intent intent = new Intent(getActivity(), ContactUsActivity.class);
+        startActivity(intent);
     }
 
     private void aboutUs() {
@@ -124,6 +126,15 @@ public class MoreFragment extends Fragment {
     }
 
     private void logOut() {
-        // Code to handle logout
+        FirebaseAuth.getInstance().signOut();
+
+        Intent intent = new Intent(getActivity(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+
+        if (getActivity() != null) {
+            getActivity().finish();
+        }
     }
+
 }

@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
@@ -236,7 +239,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
-        Marker marker = mMap.addMarker(new MarkerOptions().position(location).title(spot.getName()).snippet("Tap to book"));
+
+        // Inflate the custom layout
+        View markerView = LayoutInflater.from(getContext()).inflate(R.layout.map_marker, null);
+        TextView textView = markerView.findViewById(R.id.marker_text);
+        textView.setText("£" + spot.getPrice());
+
+        // Convert the layout to a Bitmap
+        markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        markerView.layout(0, 0, markerView.getMeasuredWidth(), markerView.getMeasuredHeight());
+        markerView.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(markerView.getMeasuredWidth(), markerView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        markerView.draw(canvas);
+
+        // Add the marker with the custom icon
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .position(location)
+                .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                .title(spot.getName())
+                .snippet("Tap to book"));
         if (marker != null) {
             marker.setTag(spot);
         } else {
