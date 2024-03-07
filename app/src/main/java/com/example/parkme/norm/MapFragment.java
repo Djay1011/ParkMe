@@ -16,6 +16,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
@@ -23,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
@@ -72,6 +74,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private SearchView searchView;
     private PlacesClient placesClient;
     private ListPopupWindow listPopupWindow;
+    private boolean isFilterDisabledAccessApplied = false;
+    private boolean isFilterCCTVApplied = false;
+    private boolean isFilterElectricChargingApplied = false;
+
+    private List<Marker> allMarkers = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -85,6 +92,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         initializeMapFragment();
         setupSearchView(view);
         setupListPopupWindow(view);
+        ImageButton filterButton = view.findViewById(R.id.filterButton);
+        filterButton.setOnClickListener(v -> showFilterDialog());
         
         return view;
     }
@@ -220,16 +229,60 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         enableMyLocation();
     }
 
+
+
     private void loadParkingSpots() {
         FirebaseFirestore.getInstance().collection("ParkingSpot").get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        task.getResult().forEach(document ->
-                                addMarkerForParkingSpot(document.toObject(ParkingSpot.class)));
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            ParkingSpot spot = document.toObject(ParkingSpot.class);
+                            addMarkerForParkingSpot(spot);  // Add markers without considering the filters
+                        }
                     } else {
                         Log.w(TAG, "Error getting documents: ", task.getException());
                     }
                 });
+    }
+
+    private void applyFilters(boolean filterDisabledAccess, boolean filterCCTV, boolean filterElectricCharging) {
+        // Assuming you have a way to access all markers (e.g., keeping them in a List)
+        for (Marker marker : allMarkers) {
+            ParkingSpot spot = (ParkingSpot) marker.getTag();
+            boolean isVisible = (!filterDisabledAccess || spot.isHasDisabledAccess()) &&
+                    (!filterCCTV || spot.isHasCCTV()) &&
+                    (!filterElectricCharging || spot.isHasElectricCharger());
+            marker.setVisible(isVisible);
+        }
+    }
+
+    private void showFilterDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View view = getLayoutInflater().inflate(R.layout.filter, null);
+        builder.setView(view);
+
+        CheckBox disabledAccess = view.findViewById(R.id.disabledAccess);
+        CheckBox CCTV = view.findViewById(R.id.cctv);
+        CheckBox electricCharging = view.findViewById(R.id.electricCharging);
+
+        // Initialize checkboxes based on the current filter states
+        disabledAccess.setChecked(isFilterDisabledAccessApplied);
+        CCTV.setChecked(isFilterCCTVApplied);
+        electricCharging.setChecked(isFilterElectricChargingApplied);
+
+        Button buttonApplyFilters = view.findViewById(R.id.button_apply_filters);
+        AlertDialog dialog = builder.create();
+
+        buttonApplyFilters.setOnClickListener(v -> {
+            isFilterDisabledAccessApplied = disabledAccess.isChecked();
+            isFilterCCTVApplied = CCTV.isChecked();
+            isFilterElectricChargingApplied = electricCharging.isChecked();
+
+            dialog.dismiss();
+            applyFilters(isFilterDisabledAccessApplied, isFilterCCTVApplied, isFilterElectricChargingApplied);
+        });
+
+        dialog.show();
     }
 
     private void addMarkerForParkingSpot(ParkingSpot spot) {
@@ -239,21 +292,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
-
-        // Inflate the custom layout
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View markerView = inflater.inflate(R.layout.map_marker, null);
         TextView textView = markerView.findViewById(R.id.marker_text);
         textView.setText("£" + spot.getPrice());
 
-        // Convert the layout to a Bitmap
         markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         markerView.layout(0, 0, markerView.getMeasuredWidth(), markerView.getMeasuredHeight());
         Bitmap bitmap = Bitmap.createBitmap(markerView.getMeasuredWidth(), markerView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         markerView.draw(canvas);
 
-        // Add the marker with the custom icon
         Marker marker = mMap.addMarker(new MarkerOptions()
                 .position(location)
                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
@@ -261,6 +310,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                 .snippet("Tap to book"));
         if (marker != null) {
             marker.setTag(spot);
+            allMarkers.add(marker); // Add the marker to the list
         } else {
             Log.w(TAG, "Marker could not be added on the map");
         }

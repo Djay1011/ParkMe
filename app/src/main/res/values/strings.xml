@@ -48,4 +48,6 @@
     <string name="end_time">End Time</string>
     <string name="wallet">My Wallet</string>
     <string name="default_notification_channel_id">Default Notification Channel ID</string>
+    <string name="filter">Filter</string>
+    <string name="don_t_have_an_account">Don’t have an account?</string>
 </resources>
