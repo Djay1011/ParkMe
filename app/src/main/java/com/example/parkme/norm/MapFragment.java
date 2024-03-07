@@ -233,22 +233,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     private void addMarkerForParkingSpot(ParkingSpot spot) {
-        if (mMap == null || spot == null) {
-            Log.w(TAG, "Map is not ready or Spot is null");
+        if (mMap == null || spot == null || getContext() == null || !isAdded()) {
+            Log.w(TAG, "Map is not ready, Spot is null, or Fragment is not added to an activity.");
             return;
         }
 
         LatLng location = new LatLng(spot.getLatitude(), spot.getLongitude());
 
         // Inflate the custom layout
-        View markerView = LayoutInflater.from(getContext()).inflate(R.layout.map_marker, null);
+        LayoutInflater inflater = LayoutInflater.from(getContext());
+        View markerView = inflater.inflate(R.layout.map_marker, null);
         TextView textView = markerView.findViewById(R.id.marker_text);
         textView.setText("£" + spot.getPrice());
 
         // Convert the layout to a Bitmap
         markerView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         markerView.layout(0, 0, markerView.getMeasuredWidth(), markerView.getMeasuredHeight());
-        markerView.buildDrawingCache();
         Bitmap bitmap = Bitmap.createBitmap(markerView.getMeasuredWidth(), markerView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         markerView.draw(canvas);

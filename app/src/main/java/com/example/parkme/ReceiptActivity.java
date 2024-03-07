@@ -1,7 +1,13 @@
 package com.example.parkme;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -11,6 +17,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.parkme.model.Bookings;
+import com.example.parkme.norm.MainActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
@@ -23,7 +31,9 @@ import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class ReceiptActivity extends AppCompatActivity {
 
@@ -67,16 +77,66 @@ public class ReceiptActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference bookingRef = db.collection("Bookings").document(bookingId);
 
-        bookingRef.update("status", "Cancelled")
-                .addOnSuccessListener(aVoid -> {
-                    statusTextView.setText("Cancelled");
-                    Toast.makeText(ReceiptActivity.this, "Booking cancelled successfully.", Toast.LENGTH_SHORT).show();
-                    qrCodeImageView.setImageBitmap(null);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ReceiptActivity.this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
-                });
+        bookingRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                bookingRef.update("status", "Cancelled")
+                        .addOnSuccessListener(aVoid -> {
+                            statusTextView.setText("Cancelled");
+                            Toast.makeText(ReceiptActivity.this, "Booking cancelled successfully.", Toast.LENGTH_SHORT).show();
+                            qrCodeImageView.setImageBitmap(null);
+                            sendCancellationNotification(documentSnapshot.toObject(Bookings.class));
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(ReceiptActivity.this, "Failed to cancel booking.", Toast.LENGTH_SHORT).show();
+                        });
+            }
+        });
     }
+
+    private void sendCancellationNotification(Bookings booking) {
+        if (booking != null) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String userId = booking.getUserId();
+            Map<String, Object> notificationData = new HashMap<>();
+            notificationData.put("userId", userId);
+            notificationData.put("title", "Booking Cancelled");
+            notificationData.put("message", "Your booking at " + booking.getParkingSpotName() + " has been cancelled.");
+            notificationData.put("timestamp", new Timestamp(new Date()));
+            notificationData.put("isRead", false);
+
+            db.collection("Notifications").add(notificationData)
+                    .addOnSuccessListener(documentReference -> receiveFcmMessage("Booking Cancelled", "Your booking at " + booking.getParkingSpotName() + " has been cancelled."))
+                    .addOnFailureListener(e -> Log.e("ReceiptActivity", "Error sending cancellation notification", e));
+        }
+    }
+
+    private void receiveFcmMessage(String title, String message) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String channelId = "cancel_notification_channel";
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Booking Cancellations",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.logo)  // ensure you have a drawable named logo in your resources
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        notificationManager.notify(1, builder.build());
+    }
+
 
 
     private void loadBookingDetails(String bookingId) {

@@ -31,6 +31,8 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        firesStore = FirebaseFirestore.getInstance();
+
         fullNameEditText = findViewById(R.id.fullNameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
@@ -89,10 +91,10 @@ public class ProfileActivity extends AppCompatActivity {
         Map<String, Object> userUpdates = new HashMap<>();
         userUpdates.put("fullName", newFullName);
         userUpdates.put("email", newEmail);
-        userUpdates.put("phoneNumber", newPhone);
+        userUpdates.put("phone", newPhone);
 
         if (currentUser != null) {
-            firesStore.collection("users").document(currentUser.getUid())
+            firesStore.collection("user").document(currentUser.getUid())
                     .update(userUpdates)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(ProfileActivity.this, "User details updated successfully.", Toast.LENGTH_SHORT).show();
@@ -103,7 +105,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
     private void fetchUserDetails() {
-       /* FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser != null) {
             DocumentReference docRef = firesStore.collection("user").document(currentUser.getUid());
@@ -111,11 +113,7 @@ public class ProfileActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     String fullName = documentSnapshot.getString("fullName");
                     String email = documentSnapshot.getString("email");
-                    String phone = documentSnapshot.getString("phoneNumber");
-
-                    TextInputEditText fullNameEditText = findViewById(R.id.fullNameEditText);
-                    TextInputEditText emailEditText = findViewById(R.id.emailEditText);
-                    TextInputEditText phoneEditText = findViewById(R.id.phoneEditText);
+                    String phone = documentSnapshot.getString("phone");
 
                     fullNameEditText.setText(fullName);
                     emailEditText.setText(email);
@@ -126,6 +124,7 @@ public class ProfileActivity extends AppCompatActivity {
             }).addOnFailureListener(e -> {
                 Toast.makeText(ProfileActivity.this, "Failed to retrieve user detail: " + e.getMessage(), Toast.LENGTH_LONG).show();
             });
-        }*/
+        }
     }
+
 }

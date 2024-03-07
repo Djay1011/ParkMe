@@ -2,11 +2,13 @@ package com.example.parkme.norm;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,6 +21,8 @@ import com.example.parkme.R;
 import com.example.parkme.ReceiptActivity;
 import com.example.parkme.model.Bookings;
 import com.example.parkme.HistoryAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -38,8 +42,10 @@ public class BookingFragment extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private HistoryAdapter adapter;
 
-    // Data
+
+    // A collection for storing information about bookings.
     private final List<Bookings> bookingList = new ArrayList<>();
+    // Using a Firestore instance to perform operations on the database.
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     @Nullable
@@ -80,20 +86,29 @@ public class BookingFragment extends Fragment {
      */
     private void loadBookings() {
         showLoading(true);
-        firestore.collection("Bookings")
-                .orderBy("startTime", Query.Direction.DESCENDING)
-                .get()
-                .addOnCompleteListener(task -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    showLoading(false);
-                    if (task.isSuccessful()) {
-                        // Update the UI with the fetched bookings
-                        updateBookingList(task.getResult());
-                    } else {
-                        // Show error state if the data fetching fails
-                        showErrorState(true);
-                    }
-                });
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            String currentUserId = currentUser.getUid();
+
+            firestore.collection("Bookings")
+                    .whereEqualTo("userId", currentUserId)
+                    .orderBy("startTime", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        swipeRefreshLayout.setRefreshing(false);
+                        showLoading(false);
+                        if (task.isSuccessful() && task.getResult() != null) {
+                            updateBookingList(task.getResult());
+                        } else {
+                            Log.e("BookingFragment", "Error loading bookings", task.getException());
+                            showErrorState(true);
+                        }
+                    });
+        } else {
+            showErrorState(true);
+            Log.e("BookingFragment", "User not authenticated");
+        }
     }
 
     /**
@@ -152,6 +167,11 @@ public class BookingFragment extends Fragment {
      * Display an empty state message when the list is empty.
      */
     private void updateUIBasedOnData() {
-        emptyStateTextView.setVisibility(bookingList.isEmpty() ? View.VISIBLE : View.GONE);
+        if (bookingList.isEmpty()) {
+            emptyStateTextView.setVisibility(View.VISIBLE);
+            emptyStateTextView.setText("No bookings found");
+        } else {
+            emptyStateTextView.setVisibility(View.GONE);
+        }
     }
 }

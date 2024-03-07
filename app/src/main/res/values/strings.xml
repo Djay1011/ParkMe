@@ -47,4 +47,5 @@
     <string name="start_time">Start Time</string>
     <string name="end_time">End Time</string>
     <string name="wallet">My Wallet</string>
+    <string name="default_notification_channel_id">Default Notification Channel ID</string>
 </resources>

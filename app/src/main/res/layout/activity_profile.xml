@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileActivity">
+    tools:context=".ProfileActivity"
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -102,7 +103,7 @@
 
     <Button
         android:id="@+id/buttonUpdateDetails"
-        android:layout_width="375dp"
+        android:layout_width="320dp"
         android:layout_height="45dp"
         android:layout_marginTop="32dp"
         android:background="@drawable/straight_btn"

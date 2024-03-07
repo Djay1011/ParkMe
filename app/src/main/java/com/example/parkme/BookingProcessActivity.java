@@ -1,10 +1,15 @@
 package com.example.parkme;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -12,6 +17,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -46,23 +52,21 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Activity for Completing and finalizing the reservation for parking.
+ * It collects information such as the date, time, and payment method before finalizing the booking.
+ */
 public class BookingProcessActivity extends AppCompatActivity {
-    private TextInputEditText dateEditText;
-    private TextInputEditText startTimeEditText;
-    private TextInputEditText endTimeEditText;
-    private TextInputEditText durationEditText;
-    private TextView vatFeeValueTextView;
-    private TextView serviceFeeValueTextView;
-    private TextView totalPriceTextView;
-    private TextView vehicleDetails;
-    private TextView parkingSpaceName;
-    private TextView currentPaymentMethod;
-    private TextView errorTextView;
+    // UI elements for inputting and displaying booking information.
+    private TextInputEditText dateEditText, startTimeEditText, endTimeEditText, durationEditText;
+    private TextView vatFeeValueTextView, serviceFeeValueTextView, totalPriceTextView;
+    private TextView vehicleDetails, parkingSpaceName, currentPaymentMethod, errorTextView;
     private MaterialButton bookButton;
     private CardDetails currentCard;
     private FirebaseFirestore firestore;
     private ParkingSpot parkingSpot;
     private double parkingRate;
+
 
 
     @Override
@@ -160,7 +164,6 @@ public class BookingProcessActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (validateInputs()) {
                     verifyAvailability();
-                    // Further processing like saving booking details
                     confirmBooking();
                 }
             }
@@ -331,35 +334,50 @@ public class BookingProcessActivity extends AppCompatActivity {
     private void fetchParkingRate() {
         if (parkingSpot != null) {
             parkingRate = parkingSpot.getPrice();
-            // Optionally, you might want to update the UI or calculations that depend on the parkingRate here
         } else {
             // Handle the case where the parkingSpot object is null
         }
     }
     private void calculateTotalCost() {
+        // Retrieve the duration string from the EditText and store it in a variable.
         String durationStr = durationEditText.getText().toString();
-        // Parse the duration string to extract hours and minutes
+
+        // Initialize variables to store the extracted hours and minutes.
         int hours = 0, minutes = 0;
+
+        // Check if the duration string contains the word "hours" to extract hours and minutes.
         if (durationStr.contains("hours")) {
+            // Split the string based on " hours " to separate hours and remaining string.
             String[] parts = durationStr.split(" hours ");
+            // Parse the first part to get the number of hours.
             hours = Integer.parseInt(parts[0]);
-            minutes = Integer.parseInt(parts[1].split(" ")[0]);
+            // Check if there are minutes, and then parse them.
+            if (parts.length > 1) {
+                minutes = Integer.parseInt(parts[1].split(" ")[0]);
+            }
         } else if (durationStr.contains("minutes")) {
+            // If the string only contains minutes, parse and retrieve the minutes.
             minutes = Integer.parseInt(durationStr.split(" ")[0]);
         }
 
+        // Calculate the total hours by adding the hours and the minutes converted to hours.
         double totalHours = hours + minutes / 60.0;
+        // Calculate the total cost by multiplying the total hours by the parking rate.
         double totalCost = totalHours * parkingRate;
 
+        // Calculate the Value Added Tax (VAT) as 20% of the total cost.
         double vat = totalCost * 0.20;
+        // Define a fixed service fee.
         double serviceFee = 0.40;
+        // Calculate the final cost by adding the total cost, VAT, and service fee.
         double finalCost = totalCost + vat + serviceFee;
 
-        // Update the TextViews
+        // Update the TextViews to display the calculated costs formatted to two decimal places.
         vatFeeValueTextView.setText(String.format("£%.2f", vat));
         serviceFeeValueTextView.setText(String.format("£%.2f", serviceFee));
         totalPriceTextView.setText(String.format("£%.2f", finalCost));
     }
+
 
     private void fetchVehicleInfo() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -444,21 +462,24 @@ public class BookingProcessActivity extends AppCompatActivity {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         DocumentReference spotRef = firestore.collection("ParkingSpot").document(parkingSpot.getId());
 
-    firestore.runTransaction(transaction -> {
-                    DocumentSnapshot snapshot = transaction.get(spotRef);
-                    long newBookedSpots = snapshot.getLong("bookedSpots") != null ? snapshot.getLong("bookedSpots") + 1 : 1;
-                    if (newBookedSpots > parkingSpot.getCapacity()) {
-                        runOnUiThread(() -> {
-                            bookButton.setText("Unavailable");
-                            bookButton.setEnabled(false);
-                            showError("Parking spot is full.");
-                        });
-                        throw new FirebaseFirestoreException("Parking spot capacity exceeded", FirebaseFirestoreException.Code.ABORTED);
-                    }
-                    transaction.update(spotRef, "bookedSpots", newBookedSpots);
-                    return null;
-                }).addOnSuccessListener(aVoid -> createBookingAndUpdateUI())
-                .addOnFailureListener(e -> showError("Booking failed. Please try again. Error: " + e.getMessage()));
+        firestore.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(spotRef);
+            long newBookedSpots = snapshot.getLong("bookedSpots") != null ? snapshot.getLong("bookedSpots") + 1 : 1;
+            if (newBookedSpots > parkingSpot.getCapacity()) {
+                runOnUiThread(() -> {
+                    bookButton.setText("Unavailable");
+                    bookButton.setEnabled(false);
+                    showError("Parking spot is full.");
+                });
+                throw new FirebaseFirestoreException("Parking spot capacity exceeded", FirebaseFirestoreException.Code.ABORTED);
+            }
+            transaction.update(spotRef, "bookedSpots", newBookedSpots);
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            createBookingAndUpdateUI();
+        }).addOnFailureListener(e -> {
+            showError("Booking failed. Please try again. Error: " + e.getMessage());
+        });
     }
 
     private void createBookingAndUpdateUI() {
@@ -485,22 +506,21 @@ public class BookingProcessActivity extends AppCompatActivity {
 
         Bookings booking = new Bookings();
         booking.setUserId(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        booking.setParkingSpotId(parkingSpot.getId()); // Assuming getId() gets the Firestore document ID or unique identifier.
-        booking.setParkingSpotName(parkingSpot.getName()); // Setting the name of the parking spot.
+        booking.setParkingSpotId(parkingSpot.getId());
+        booking.setParkingSpotName(parkingSpot.getName());
         booking.setStartTime(startTime);
         booking.setEndTime(endTime);
         booking.setDuration(durationInHours);
         booking.setTotalPrice(finalTotalPrice);
-        booking.setStatus(determineBookingStatus(startTime, endTime)); // Ensure this method is correctly implemented.
+        booking.setStatus(determineBookingStatus(startTime, endTime));
 
-        // Ensure this method is implemented correctly
-
-        Map<String, Object> bookingMap = booking.toMap(); // Convert booking object to a map for Firestore upload
+        Map<String, Object> bookingMap = booking.toMap();
 
         firestore.collection("Bookings").add(bookingMap)
                 .addOnSuccessListener(documentReference -> {
-                    // Update the UI to show the booking confirmation
+                    booking.setBookingId(documentReference.getId()); // Set the booking ID
                     displayConfirmation(booking);
+                    sendConfirmationToFirestore(booking);
                 })
                 .addOnFailureListener(e -> {
                     showError("Failed to save booking. Please try again.");
@@ -555,10 +575,9 @@ public class BookingProcessActivity extends AppCompatActivity {
     }
 
     private String formatBookingDetails(Bookings booking) {
-        // Format your booking details into a human-readable string
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        return "ID: " + booking.getBookingId() + "\n"
-                + "Spot Name: " + booking.getParkingSpotName() + "\n"  // Including the parking spot name in the details
+        return
+                "Spot Name: " + booking.getParkingSpotName() + "\n\n" // Including the parking spot name in the details
                 + "Start: " + dateFormat.format(booking.getStartTime()) + "\n"
                 + "End: " + dateFormat.format(booking.getEndTime()) + "\n"
                 + "Price: $" + String.format("%.2f", booking.getTotalPrice());  // Ensuring the price is formatted to two decimal places
@@ -566,8 +585,6 @@ public class BookingProcessActivity extends AppCompatActivity {
 
 
     private Bitmap generateQRCode(String text) {
-        // Implement QR code generation logic here
-        // This is a placeholder for the actual QR code generation logic
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
@@ -585,4 +602,68 @@ public class BookingProcessActivity extends AppCompatActivity {
             return null;
         }
     }
+
+    private void sendConfirmationToFirestore(Bookings booking) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            DocumentReference newNotificationRef = firestore.collection("Notifications").document();
+
+            Map<String, Object> notification = new HashMap<>();
+            notification.put("id", newNotificationRef.getId());
+            notification.put("userId", userId); // Associate the notification with the current user's ID
+            notification.put("title", "Booking Confirmed");
+            notification.put("message", "Your booking at " + booking.getParkingSpotName() + " has been confirmed for " + booking.getStartTime() + ".");
+            notification.put("timestamp", new Date());
+            notification.put("isRead", false);
+
+            newNotificationRef.set(notification)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("TAG", "DocumentSnapshot successfully written!");
+                        receiveFcmMessage(booking);
+                    })
+                    .addOnFailureListener(e -> Log.e("TAG", "Error adding document", e));
+        } else {
+            Log.e("TAG", "No user logged in, can't send notification.");
+        }
+    }
+
+    private void receiveFcmMessage(Bookings booking) {
+        String fcmTitle = "Booking Confirmed";
+        String fcmBody = "Your booking at " + booking.getParkingSpotName() + " has been confirmed for " + booking.getStartTime() + ".";
+        displayNotification(fcmTitle, fcmBody, booking.getBookingId());
+    }
+
+
+    private void displayNotification(String title, String messageBody, String bookingId) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String channelId = "booking_confirmation_channel";
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Booking Confirmations",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        Intent intent = new Intent(this, ReceiptActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("bookingId", bookingId); // Pass the booking ID to ReceiptActivity
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.logo) // Ensure you have a drawable named logo in your resources
+                .setContentTitle(title)
+                .setContentText(messageBody)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        notificationManager.notify(0, builder.build());
+    }
+
+
 }

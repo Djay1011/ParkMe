@@ -1,66 +1,103 @@
 package com.example.parkme.norm;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.example.parkme.R;
+import com.example.parkme.NotificationAdapter;
+import com.example.parkme.model.Notifications;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NotificationFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class NotificationFragment extends Fragment {
+public class NotificationFragment extends Fragment implements NotificationAdapter.OnNotificationClickListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public NotificationFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NotificationFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static NotificationFragment newInstance(String param1, String param2) {
-        NotificationFragment fragment = new NotificationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private RecyclerView recyclerView;
+    private NotificationAdapter adapter;
+    private FirebaseFirestore fireStore;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_notification, container, false);
+
+        recyclerView = view.findViewById(R.id.notificationsRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        fireStore = FirebaseFirestore.getInstance();
+        adapter = new NotificationAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
+
+        loadNotifications();
+
+        return view;
+    }
+
+    private void loadNotifications() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            fireStore.collection("Notifications")
+                    .whereEqualTo("userId", userId)
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.w("NotificationFragment", "Listen failed.", error);
+                            return;
+                        }
+
+                        List<Notifications> notifications = new ArrayList<>();
+                        for (QueryDocumentSnapshot doc : value) {
+                            notifications.add(doc.toObject(Notifications.class));
+                        }
+                        adapter.setNotifications(notifications);
+                    });
+        } else {
+            Log.e("NotificationFragment", "No user logged in, can't load notifications.");
         }
     }
 
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_notification, container, false);
+    public void onNotificationClicked(Notifications notification) {
+        if (notification != null) {
+            // Create an AlertDialog to show the notification details
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle(notification.getTitle());
+            builder.setMessage(notification.getMessage());
+
+            // Add an OK button to the dialog
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                // Check if the notification is not read and the ID is not null
+                if (!notification.isRead() && notification.getId() != null) {
+                    fireStore.collection("Notifications").document(notification.getId())
+                            .update("isRead", true)
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("NotificationFragment", "DocumentSnapshot successfully updated!");
+                                // Set the local notification object as read
+                                notification.setRead(true);
+                                // Notify the adapter to refresh the RecyclerView
+                                adapter.notifyDataSetChanged();
+                            })
+                            .addOnFailureListener(e -> Log.w("NotificationFragment", "Error updating document", e));
+                }
+            });
+
+            // Create and show the AlertDialog
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        } else {
+            Log.e("NotificationFragment", "Notification is null.");
+        }
     }
+
 }

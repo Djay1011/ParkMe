@@ -12,10 +12,9 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import com.example.parkme.ContactUsActivity;
+import com.example.parkme.norm.LoginActivity;
 import com.example.parkme.ProfileActivity;
 import com.example.parkme.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,117 +23,159 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * A fragment displaying a menu with a variety of options, offering users access to settings and extra features..
+ */
 public class MoreFragment extends Fragment {
 
-    // Other member variables...
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment with the "More" options
         View view = inflater.inflate(R.layout.fragment_more, container, false);
 
-        // Initialize views and set up listeners
+        // Setup the UI components and their event listeners
         setUpViewsAndListeners(view);
         return view;
     }
 
+    /**
+     * Initializes the views and sets up the event listeners for the UI components.
+     *
+     * @param view The root view of the fragment.
+     */
     private void setUpViewsAndListeners(View view) {
+        // Initialize the TextView for displaying the user's name
         TextView userNameTextView = view.findViewById(R.id.userName);
         fetchAndDisplayUserFirstName(userNameTextView);
 
+        // Setup the switch for toggling dark mode
         SwitchMaterial darkModeSwitch = view.findViewById(R.id.darkModeSwitch);
-        // Set the switch based on the current theme mode
         darkModeSwitch.setChecked(AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES);
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> toggleDarkMode(isChecked));
 
-        // Set up listeners
-        view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
-        view.findViewById(R.id.notificationSwitch).setOnClickListener(v -> toggleNotifications());
-        view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
-        view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
-        view.findViewById(R.id.securityText).setOnClickListener(v -> viewSecurityPrivacy());
-        view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
-        /*view.findViewById(R.id.aboutUsLayout).setOnClickListener(v -> aboutUs());*/
-        view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
+        // Initialize click listeners for various options in the fragment
+        setupClickListeners(view);
     }
 
-
-
+    /**
+     * Retrieve the first name of the current user from Firestore and display it in the TextView.
+     *
+     * @param userNameTextView TextView where the user's first name will be displayed.
+     */
     private void fetchAndDisplayUserFirstName(TextView userNameTextView) {
+        // Retrieve the existing user from Firebase.
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // Continue only if the user is not nonexistent.
         if (user != null) {
             String currentUserId = user.getUid();
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            DocumentReference docRef = db.collection("user").document(currentUserId);
-            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null && document.exists()) {
-                            String firstName = document.getString("fullName");
-                            userNameTextView.setText(firstName);
-                        } else {
-                            userNameTextView.setText("Guest");
-                        }
-                    } else {
-                        userNameTextView.setText("Guest");
-                    }
+            // Referencing the Firestore document represent the user
+            DocumentReference docRef = FirebaseFirestore.getInstance().collection("user").document(currentUserId);
+
+            // Fetch the user document in an asynchronous manner.
+            docRef.get().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    // Assign the user's name to the TextView. If the name is not available, set it to "Guest" by default.
+                    String firstName = document != null ? document.getString("fullName") : "Guest";
+                    userNameTextView.setText(firstName);
+                } else {
+                    // Alternative text in the event of a failure.
+                    userNameTextView.setText("Guest");
                 }
             });
         }
     }
 
+    /**
+     * Sets up the click listeners for the user interface elements.
+     * @param view The root view of the fragment.
+     */
+    private void setupClickListeners(View view) {
+        // Listener for the profile view option
+        view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
+
+        // Placeholder for notification toggle
+        view.findViewById(R.id.notificationSwitch).setOnClickListener(v -> toggleNotifications());
+
+        // Listener for viewing vehicle information
+        view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
+
+        // Listener for switching to the payment methods view
+        view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
+
+        // Placeholder for viewing security and privacy settings
+        view.findViewById(R.id.securityText).setOnClickListener(v -> viewSecurityPrivacy());
+
+        // Listener for contacting support
+        view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
+
+        // Placeholder for logging out the current user
+        view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
+    }
+
+    /**
+     * Begins the process of accessing the user's profile.
+     */
     private void viewProfile() {
-        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(getActivity(), ProfileActivity.class));
     }
 
+    /**
+     * Switches the app's dark mode on or off.
+     * @param isEnabled Whether dark mode should be enabled.
+     */
     private void toggleDarkMode(boolean isEnabled) {
-        if (isEnabled) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
+        AppCompatDelegate.setDefaultNightMode(isEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
+    /**
+     * Placeholder method for toggling notifications.
+     */
     private void toggleNotifications() {
-        // Code to toggle notifications
+        // Implementation required
     }
 
+    /**
+     * Begins the process of accessing the vehicle's information.
+     */
     private void viewVehicleInfo() {
-        Intent intent = new Intent(getActivity(), VehicleInfoActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(getActivity(), VehicleInfoActivity.class));
     }
 
+    /**
+     * Switches the current navigation view to the wallet section..
+     */
     private void viewPaymentMethod() {
-        BottomNavigationView bottomNavigationView = getActivity().findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_wallet);
+        ((BottomNavigationView) getActivity().findViewById(R.id.bottom_navigation)).setSelectedItemId(R.id.nav_wallet);
     }
 
+    /**
+     * Placeholder method for viewing security and privacy settings.
+     */
     private void viewSecurityPrivacy() {
-        // Code to view security and privacy settings
+        // Implementation required
     }
 
+    /**
+     * S Starts the activity for contacting support.
+     */
     private void contactUs() {
-        Intent intent = new Intent(getActivity(), ContactUsActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(getActivity(), ContactUsActivity.class));
     }
 
-    private void aboutUs() {
-        // Code to show about us information
-    }
-
+    /**
+     * Ends the session for the current user and takes them back to the login page.
+     */
     private void logOut() {
         FirebaseAuth.getInstance().signOut();
-
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
 
+        // Close the current activity
         if (getActivity() != null) {
             getActivity().finish();
         }
     }
-
 }
