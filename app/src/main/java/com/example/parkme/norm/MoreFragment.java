@@ -95,17 +95,12 @@ public class MoreFragment extends Fragment {
         // Listener for the profile view option
         view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
 
-        // Placeholder for notification toggle
-        view.findViewById(R.id.notificationSwitch).setOnClickListener(v -> toggleNotifications());
-
         // Listener for viewing vehicle information
         view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
 
         // Listener for switching to the payment methods view
         view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
 
-        // Placeholder for viewing security and privacy settings
-        view.findViewById(R.id.securityText).setOnClickListener(v -> viewSecurityPrivacy());
 
         // Listener for contacting support
         view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
@@ -129,12 +124,6 @@ public class MoreFragment extends Fragment {
         AppCompatDelegate.setDefaultNightMode(isEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
-    /**
-     * Placeholder method for toggling notifications.
-     */
-    private void toggleNotifications() {
-        // Implementation required
-    }
 
     /**
      * Begins the process of accessing the vehicle's information.
@@ -150,15 +139,9 @@ public class MoreFragment extends Fragment {
         ((BottomNavigationView) getActivity().findViewById(R.id.bottom_navigation)).setSelectedItemId(R.id.nav_wallet);
     }
 
-    /**
-     * Placeholder method for viewing security and privacy settings.
-     */
-    private void viewSecurityPrivacy() {
-        // Implementation required
-    }
 
     /**
-     * S Starts the activity for contacting support.
+     * Starts the activity for contacting support.
      */
     private void contactUs() {
         startActivity(new Intent(getActivity(), ContactUsActivity.class));

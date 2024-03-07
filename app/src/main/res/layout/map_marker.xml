@@ -9,7 +9,7 @@
         android:id="@+id/marker_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="10sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         android:textColor="?attr/colorSurface"
         android:padding="4dp" />

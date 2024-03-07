@@ -221,6 +221,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mMap = googleMap;
         setupMap();
         loadParkingSpots();
+        updateMapStyle();
+    }
+
+    private void updateMapStyle() {
+        // Check if dark mode is currently enabled
+        int nightModeFlags = requireContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                applyMapStyle(R.raw.dark_map);
+                break;
+            case Configuration.UI_MODE_NIGHT_NO:
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                applyMapStyle(R.raw.light_map);
+                break;
+        }
+    }
+
+    private void applyMapStyle(int styleResId) {
+        try {
+            boolean success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), styleResId));
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }
     }
 
     private void setupMap() {
