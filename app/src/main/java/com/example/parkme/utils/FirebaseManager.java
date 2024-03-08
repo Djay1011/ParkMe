@@ -9,18 +9,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * A utility class responsible for handling Firebase operations, particularly managing user credit card information.
+ */
 public class FirebaseManager {
 
     private final FirebaseFirestore firestore;
     private final FirebaseAuth auth;
 
-
-
+    /**
+     * Instantiating Firebase Firestore and Auth instances in the constructor.
+     */
     public FirebaseManager() {
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
     }
 
+    /**
+     * Retrieves the stored card information for the current user from Firestore.
+     *
+     * @param onSuccess A consumer that takes the list of CardDetails objects on successful data retrieval.
+     * @param onFailure A consumer that handles the exception if the operation fails.
+     */
     public void loadUserCardDetails(Consumer<List<CardDetails>> onSuccess,
                                     Consumer<Exception> onFailure) {
         FirebaseUser currentUser = auth.getCurrentUser();
@@ -43,6 +53,13 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> onFailure.accept(e));
     }
 
+    /**
+     * Deletes a specific card from the Firestore database.
+     *
+     * @param cardDetails The card details to delete.
+     * @param onSuccess A runnable that is executed on successful deletion.
+     * @param onFailure A consumer that handles the exception if the deletion fails.
+     */
     public void deleteUserCard(CardDetails cardDetails, Runnable onSuccess, Consumer<Exception> onFailure) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null || cardDetails == null) {
@@ -58,5 +75,4 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> onFailure.accept(e));
     }
 
-    // Additional Firebase methods
 }

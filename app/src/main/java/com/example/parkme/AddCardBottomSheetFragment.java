@@ -48,11 +48,11 @@ public class AddCardBottomSheetFragment extends BottomSheetDialogFragment {
         firestore = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
 
-        // Set up Stripe with the public key.
-        PaymentConfiguration.init(getContext(), "your_stripe_public_key");
+        // Sets up Stripe with the public key.
+        PaymentConfiguration.init(getContext(), "pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E");
         stripe = new Stripe(getContext(), PaymentConfiguration.getInstance(getContext()).getPublishableKey());
 
-        // Setup the card input widget from Stripe.
+        // Sets up the card input widget from Stripe.
         cardInputWidget = view.findViewById(R.id.cardInputWidget);
 
         // Creates the add card button and its associated click listener.
