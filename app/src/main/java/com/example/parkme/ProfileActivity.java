@@ -18,12 +18,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Activity for  overseeing and handling user profile data.
+ * Users have the option to both update their information and terminate their account.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
-    private FirebaseFirestore firesStore;
-    private TextInputEditText fullNameEditText;
-    private TextInputEditText emailEditText;
-    private TextInputEditText phoneEditText;
+    private FirebaseFirestore firestore;
+    private TextInputEditText fullNameEditText, emailEditText, phoneEditText;
     private FirebaseUser currentUser;
 
     @Override
@@ -31,100 +33,113 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        firesStore = FirebaseFirestore.getInstance();
+        initializeViews();
+        setupToolbar();
+        fetchUserDetails();
+    }
+
+    /**
+     * Start up the views and configure event listeners.
+     */
+    private void initializeViews() {
+        firestore = FirebaseFirestore.getInstance();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         fullNameEditText = findViewById(R.id.fullNameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         findViewById(R.id.buttonUpdateDetails).setOnClickListener(v -> updateDetails());
         findViewById(R.id.buttonCloseAccount).setOnClickListener(v -> confirmAccountDeletion());
-
-        toolbar.setNavigationOnClickListener(v -> {
-            onBackPressed();
-        });
-
-        fetchUserDetails();
     }
 
+    /**
+     * Sets up the Material Toolbar and enables functionality for the back button.
+     */
+    private void setupToolbar() {
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+
+    /**
+     * Retrieves the latest information of the logged-in user from Firestore and displays it.
+     */
+    private void fetchUserDetails() {
+        if (currentUser != null) {
+            DocumentReference userDoc = firestore.collection("user").document(currentUser.getUid());
+            userDoc.get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    fullNameEditText.setText(documentSnapshot.getString("fullName"));
+                    emailEditText.setText(documentSnapshot.getString("email"));
+                    phoneEditText.setText(documentSnapshot.getString("phone"));
+                } else {
+                    Toast.makeText(this, "User details not found.", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnFailureListener(e -> {
+                Toast.makeText(this, "Error fetching user details: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
+        }
+    }
+
+    /**
+     * Verifies the removal of the user's account.
+     */
     private void confirmAccountDeletion() {
         new AlertDialog.Builder(this)
                 .setMessage("Are you sure you want to delete your account?")
-                .setPositiveButton("Yes", (dialogInterface, i) -> closeUserAccount())
+                .setPositiveButton("Yes", (dialog, which) -> closeUserAccount())
                 .setNegativeButton("No", null)
                 .show();
     }
 
+    /**
+     * Deactivates the account of the current user by erasing their data and disabling the account.
+     */
     private void closeUserAccount() {
         if (currentUser != null) {
-            firesStore.collection("user").document(currentUser.getUid()).delete()
-                    .addOnSuccessListener(aVoid -> {
-                        currentUser.delete().addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                FirebaseAuth.getInstance().signOut();
-                                redirectToLogin();
-                            } else {
-                                Toast.makeText(ProfileActivity.this, "Failed to delete user account: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProfileActivity.this, "Failed to delete user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
+            DocumentReference userDoc = firestore.collection("user").document(currentUser.getUid());
+            userDoc.delete().addOnSuccessListener(aVoid -> {
+                currentUser.delete().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseAuth.getInstance().signOut();
+                        redirectToLogin();
+                    } else {
+                        Toast.makeText(this, "Failed to delete user account.", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }).addOnFailureListener(e -> {
+                Toast.makeText(this, "Error deleting user data: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
         }
     }
 
+    /**
+     * Send the user to the login page.
+     */
     private void redirectToLogin() {
-        Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+        Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
     }
 
+    /**
+     * Updates the user's information with the newly entered data.
+     */
     private void updateDetails() {
-        String newFullName = fullNameEditText.getText().toString();
-        String newEmail = emailEditText.getText().toString();
-        String newPhone = phoneEditText.getText().toString();
-
-        Map<String, Object> userUpdates = new HashMap<>();
-        userUpdates.put("fullName", newFullName);
-        userUpdates.put("email", newEmail);
-        userUpdates.put("phone", newPhone);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("fullName", fullNameEditText.getText().toString());
+        updates.put("email", emailEditText.getText().toString());
+        updates.put("phone", phoneEditText.getText().toString());
 
         if (currentUser != null) {
-            firesStore.collection("user").document(currentUser.getUid())
-                    .update(userUpdates)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(ProfileActivity.this, "User details updated successfully.", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProfileActivity.this, "Failed to update user details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        }
-    }
-    private void fetchUserDetails() {
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            DocumentReference docRef = firesStore.collection("user").document(currentUser.getUid());
-            docRef.get().addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    String fullName = documentSnapshot.getString("fullName");
-                    String email = documentSnapshot.getString("email");
-                    String phone = documentSnapshot.getString("phone");
-
-                    fullNameEditText.setText(fullName);
-                    emailEditText.setText(email);
-                    phoneEditText.setText(phone);
-                } else {
-                    Toast.makeText(ProfileActivity.this, "No user details found.", Toast.LENGTH_SHORT).show();
-                }
+            DocumentReference userDoc = firestore.collection("user").document(currentUser.getUid());
+            userDoc.update(updates).addOnSuccessListener(aVoid -> {
+                Toast.makeText(this, "User details updated successfully.", Toast.LENGTH_SHORT).show();
             }).addOnFailureListener(e -> {
-                Toast.makeText(ProfileActivity.this, "Failed to retrieve user detail: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Failed to update user details.", Toast.LENGTH_LONG).show();
             });
         }
     }
-
 }

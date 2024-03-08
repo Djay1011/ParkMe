@@ -9,42 +9,41 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
-    // This is where we set the parameters for our lower navigation bar.
+    // Field for the bottom navigation view.
     private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // This code establishes the user interface design for the MainActivity.
+        setContentView(R.layout.activity_main);
 
-
-        // Connect our BottomNavigationView in the layout to our Java code.
+        // Initialize the bottom navigation view and set its listener.
         bottomNav = findViewById(R.id.bottom_navigation);
-        // Create a listener that reacts to the selection of items on the bottom navigation bar.
         bottomNav.setOnNavigationItemSelectedListener(navListener);
 
-        // Quickly access the map with the Floating Action Button.
+        // Floating Action Button for quick access to the map.
         FloatingActionButton fabMap = findViewById(R.id.fab_map);
         fabMap.setOnClickListener(view -> {
-            // Clicking the FAB will immediately display the MapFragment.
+            // Replace the current fragment with the MapFragment when FAB is clicked.
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MapFragment()).commit();
-            // Additionally, we ensure that the map icon is prominently displayed in the bottom navigation.
+            // Highlight the map icon in the bottom navigation view.
             bottomNav.setSelectedItemId(R.id.nav_map);
         });
 
-        // Upon starting the app, the MapFragment will be displayed by default..
+        // Load the default fragment when the activity is first created.
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MapFragment()).commit();
-            bottomNav.setSelectedItemId(R.id.nav_map); // Highlight the map item in the bottom navigation.
+            bottomNav.setSelectedItemId(R.id.nav_map);
         }
     }
 
-    // Our navigation listener determines the action for a selected menu item.
+    // Listener for the bottom navigation items.
     private BottomNavigationView.OnNavigationItemSelectedListener navListener = item -> {
         Fragment selectedFragment = null;
         int itemId = item.getItemId();
 
-        // Select the correct fragment based on the bottom navigation item chosen.
+
+        // Determine which fragment to display based on the selected item ID.
         if (itemId == R.id.nav_map) {
             selectedFragment = new MapFragment();
         } else if (itemId == R.id.nav_wallet) {
@@ -57,11 +56,11 @@ public class MainActivity extends AppCompatActivity {
             selectedFragment = new BookingFragment();
         }
 
-        // Replace the content in the fragment_container view with the fragment we have chosen.
+        // Replace the current fragment with the selected one.
         if (selectedFragment != null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, selectedFragment).commit();
-            return true; // Indicate we've handled the selection.
+            return true;
         }
-        return false; // No action was taken, so return false.
+        return false;
     };
 }

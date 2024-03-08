@@ -13,58 +13,79 @@ import android.widget.Toast;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 
+/**
+ * Activity that enables users to reach out to customer support or provide feedback through email.
+ * Users fill in their personal information such as their name and email,
+ * along with their message, and the application streamlines the process of sending it through an email platform.
+ */
 public class ContactUsActivity extends AppCompatActivity {
 
-    TextInputEditText nameEditText, emailEditText, messageEditText;
-    Button sendButton;
+    private TextInputEditText nameEditText, emailEditText, messageEditText;
+    private Button sendButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_us);
 
+        initializeViews();
+        setupToolbar();
+    }
+
+    /**
+     * Sets up the visual elements of the activity.
+     */
+    private void initializeViews() {
         nameEditText = findViewById(R.id.nameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         messageEditText = findViewById(R.id.messageEditText);
         sendButton = findViewById(R.id.sendButton);
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(v -> {
-            onBackPressed();
-        });
-
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Extract the text from TextInputEditText
-                String name = nameEditText.getText().toString().trim();
-                String email = emailEditText.getText().toString().trim();
-                String message = messageEditText.getText().toString().trim();
-
-                // Check if the fields are not empty
-                if (!TextUtils.isEmpty(email) && !TextUtils.isEmpty(name) && !TextUtils.isEmpty(message)) {
-                    sendEmail(email, name, message);
-                } else {
-                    // Show a message if any field is empty
-                    Toast.makeText(ContactUsActivity.this, "Please fill all the fields.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        sendButton.setOnClickListener(v -> validateInputAndSendEmail());
     }
 
+    /**
+     * Organizes the toolbar and specifies how the back button should function.
+     */
+    private void setupToolbar() {
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+    }
+
+    /**
+     * Confirms the user's input and, if it meets the criteria, proceeds to send an email.
+     */
+    private void validateInputAndSendEmail() {
+        String name = nameEditText.getText().toString().trim();
+        String email = emailEditText.getText().toString().trim();
+        String message = messageEditText.getText().toString().trim();
+
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(message)) {
+            Toast.makeText(this, "Please fill all the fields.", Toast.LENGTH_SHORT).show();
+        } else {
+            sendEmail(email, name, message);
+        }
+    }
+
+    /**
+     * Generates a intent to send the email and initiates the email application.
+     *
+     * @param email   The email address entered by the user.
+     * @param name    The name entered by the user.
+     * @param message The message entered by the user.
+     */
     private void sendEmail(String email, String name, String message) {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("mailto:")); // Only email apps should handle this
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{email}); // Recipient's email
+        intent.setData(Uri.parse("mailto:"));
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{email}); // Recipient's email.
         intent.putExtra(Intent.EXTRA_SUBJECT, "Contact Us Message from " + name);
         intent.putExtra(Intent.EXTRA_TEXT, message);
 
-        // Attempt to launch the email application
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         } else {
-            // Notify the user if no email app is installed
-            Toast.makeText(ContactUsActivity.this, "There are no email applications installed.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "There are no email applications installed.", Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -112,5 +112,4 @@ public class WalletFragment extends Fragment {
         // Handle deletion failure
     }
 
-    // Additional methods as needed
 }

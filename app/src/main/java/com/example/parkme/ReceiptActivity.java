@@ -35,37 +35,45 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Activity displaying the booking receipt details along with the option to cancel the booking.
+ * It also provides a feature to generate a QR code related to the booking details.
+ */
 public class ReceiptActivity extends AppCompatActivity {
 
+    // UI components to display booking details
     private TextView parkingSpotNameTextView, totalTextView, dateTextView, startTimeTextView, endTimeTextView, durationTextView, statusTextView;
-    private Button cancelBookingButton;
-    private ImageView qrCodeImageView;
+    private Button cancelBookingButton; // Button to trigger the cancellation of the booking
+    private ImageView qrCodeImageView; // ImageView to display the generated QR code
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receipt);
 
+        // Binding the UI components to their respective views in the layout
         parkingSpotNameTextView = findViewById(R.id.parkingSpotNameTextView);
         dateTextView = findViewById(R.id.dateTextView);
         startTimeTextView = findViewById(R.id.startTimeTextView);
         endTimeTextView = findViewById(R.id.endTimeTextView);
         durationTextView = findViewById(R.id.durationTextView);
         statusTextView = findViewById(R.id.statusTextView);
-        totalTextView = findViewById(R.id.totalTextView); // New TextView for Total
+        totalTextView = findViewById(R.id.totalTextView);
         cancelBookingButton = findViewById(R.id.cancelBookingButton);
         qrCodeImageView = findViewById(R.id.qrCodeImageView);
+
+        // Setting up the toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setNavigationOnClickListener(v -> {
-            onBackPressed();
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
+        // Extracting booking ID passed from the previous activity
         String bookingId = getIntent().getStringExtra("bookingId");
         if (bookingId != null) {
             loadBookingDetails(bookingId);
         }
 
+        // Setup the cancellation button's onClick listener
         cancelBookingButton.setOnClickListener(v -> {
             if (bookingId != null) {
                 updateBookingStatusToCancelled(bookingId);
@@ -73,17 +81,23 @@ public class ReceiptActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the booking status to 'Cancelled' in the database and reflects the change in the UI.
+     *
+     * @param bookingId The ID of the booking to be cancelled.
+     */
     private void updateBookingStatusToCancelled(String bookingId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference bookingRef = db.collection("Bookings").document(bookingId);
 
+        // Retrieving the booking document and updating its status
         bookingRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 bookingRef.update("status", "Cancelled")
                         .addOnSuccessListener(aVoid -> {
                             statusTextView.setText("Cancelled");
                             Toast.makeText(ReceiptActivity.this, "Booking cancelled successfully.", Toast.LENGTH_SHORT).show();
-                            qrCodeImageView.setImageBitmap(null);
+                            qrCodeImageView.setImageBitmap(null); // Clear the QR code image
                             sendCancellationNotification(documentSnapshot.toObject(Bookings.class));
                         })
                         .addOnFailureListener(e -> {
@@ -93,6 +107,11 @@ public class ReceiptActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sends a local notification and updates Firestore to reflect the cancellation of the booking.
+     *
+     * @param booking The booking object associated with the cancellation.
+     */
     private void sendCancellationNotification(Bookings booking) {
         if (booking != null) {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -104,115 +123,112 @@ public class ReceiptActivity extends AppCompatActivity {
             notificationData.put("timestamp", new Timestamp(new Date()));
             notificationData.put("isRead", false);
 
+            // Adding the cancellation notification to Firestore
             db.collection("Notifications").add(notificationData)
                     .addOnSuccessListener(documentReference -> receiveFcmMessage("Booking Cancelled", "Your booking at " + booking.getParkingSpotName() + " has been cancelled."))
                     .addOnFailureListener(e -> Log.e("ReceiptActivity", "Error sending cancellation notification", e));
         }
     }
 
+    /**
+     * Triggers the local notification to inform the user about the booking cancellation.
+     *
+     * @param title   The title of the notification.
+     * @param message The message content of the notification.
+     */
     private void receiveFcmMessage(String title, String message) {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String channelId = "cancel_notification_channel";
 
+        // Creating notification channel for Android Oreo and above
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    channelId,
-                    "Booking Cancellations",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
+            NotificationChannel channel = new NotificationChannel(channelId, "Booking Cancellations", NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
         }
 
+        // Creating the intent that will fire when the user taps on the notification
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
+        // Building the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.logo)  // ensure you have a drawable named logo in your resources
+                .setSmallIcon(R.drawable.logo)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
+        // Issuing the notification
         notificationManager.notify(1, builder.build());
     }
 
-
-
+    /**
+     * Loads the details of the booking from Firestore and displays them in the UI.
+     *
+     * @param bookingId The ID of the booking whose details are to be loaded.
+     */
     private void loadBookingDetails(String bookingId) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Bookings").document(bookingId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
                 if (document.exists()) {
-                    parkingSpotNameTextView.setText(document.getString("parkingSpotName"));
-                    statusTextView.setText(document.getString("status"));
-
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-                    Timestamp startDateTimestamp = document.getTimestamp("startTime");
-                    if (startDateTimestamp != null) {
-                        Date startDate = startDateTimestamp.toDate();
-                        dateTextView.setText(dateFormat.format(startDate));
-                    }
-
-                    Timestamp startTimeTimestamp = document.getTimestamp("startTime");
-                    if (startTimeTimestamp != null) {
-                        Date startTime = startTimeTimestamp.toDate();
-                        startTimeTextView.setText(timeFormat.format(startTime));
-                    }
-
-                    Timestamp endTimeTimestamp = document.getTimestamp("endTime");
-                    if (endTimeTimestamp != null) {
-                        Date endTime = endTimeTimestamp.toDate();
-                        endTimeTextView.setText(timeFormat.format(endTime));
-                    }
-
-                    // Retrieve and display the duration in hours
-                    Long duration = document.getLong("duration");
-                    if (duration != null) {
-                        durationTextView.setText(String.format(Locale.getDefault(), "%d hours", duration));
-                    } else {
-                        durationTextView.setText("Duration unavailable");
-                    }
-
-                    // Retrieve and display the total price
-                    Double price = document.getDouble("totalPrice");
-                    if (price != null) {
-                        totalTextView.setText(String.format(Locale.getDefault(), "£%.2f", price));
-                    } else {
-                        totalTextView.setText("Price unavailable");
-                    }
-
-                    generateAndSetQRCode(bookingId);
+                    updateUIWithBookingDetails(document);
                 } else {
-                    // Handle case where no such document exists.
                     Toast.makeText(ReceiptActivity.this, "Booking not found.", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                // Handle the failure to retrieve the document
                 Toast.makeText(ReceiptActivity.this, "Failed to load booking details. Please try again later.", Toast.LENGTH_LONG).show();
                 Log.e("ReceiptActivity", "Error loading booking details", task.getException());
             }
         });
     }
 
+    /**
+     * Updates the UI elements with the data from the booking document.
+     *
+     * @param document The Firestore document snapshot containing booking details.
+     */
+    private void updateUIWithBookingDetails(DocumentSnapshot document) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        // Display booking details
+        parkingSpotNameTextView.setText(document.getString("parkingSpotName"));
+        statusTextView.setText(document.getString("status"));
+        Timestamp startDateTimestamp = document.getTimestamp("startTime");
+        dateTextView.setText(dateFormat.format(startDateTimestamp.toDate()));
+        startTimeTextView.setText(timeFormat.format(startDateTimestamp.toDate()));
+        Timestamp endTimeTimestamp = document.getTimestamp("endTime");
+        endTimeTextView.setText(timeFormat.format(endTimeTimestamp.toDate()));
+        Long duration = document.getLong("duration");
+        durationTextView.setText(String.format(Locale.getDefault(), "%d hours", duration));
+        Double price = document.getDouble("totalPrice");
+        totalTextView.setText(String.format(Locale.getDefault(), "£%.2f", price));
+
+        // Generate and display QR code
+        generateAndSetQRCode(document.getId());
+    }
+
+    /**
+     * Generates a QR code based on the given data and sets it to the ImageView.
+     *
+     * @param data The data to encode in the QR code.
+     */
     private void generateAndSetQRCode(String data) {
         QRCodeWriter writer = new QRCodeWriter();
         try {
             BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, 512, 512);
-            int width = bitMatrix.getWidth();
-            int height = bitMatrix.getHeight();
-            Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
+            Bitmap bmp = Bitmap.createBitmap(512, 512, Bitmap.Config.RGB_565);
+            for (int x = 0; x < 512; x++) {
+                for (int y = 0; y < 512; y++) {
                     bmp.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
                 }
             }
             qrCodeImageView.setImageBitmap(bmp);
         } catch (WriterException e) {
-            e.printStackTrace();
+            Log.e("ReceiptActivity", "Error generating QR code: ", e);
         }
     }
 }
