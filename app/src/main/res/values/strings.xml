@@ -29,7 +29,6 @@
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
 
-    // stripe keys//
     <string name="PublishableKey">pk_test_51OjOHoCTdoQWDPpqUIigF81EkPKpeEeurB2aw3dfvWQmoXCai6XVsY8sYwm9LSwHdFiLXqusY0kYlD7B9QoGE8oh00kl9NL05E</string>
     <string name="SecretKey">sk_test_51OjOHoCTdoQWDPpqEterXHfQMnrOxluO593psmQ6tLy16kvIXaeYV98zmJmfEIJ2PaC38VTkRT17DRjrnYmB4MyX00l1RtIIWE</string>
     <string name="CustomerId"></string>

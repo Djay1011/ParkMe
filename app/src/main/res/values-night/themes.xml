@@ -1,7 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme for Material 3 -->
     <style name="Base.Theme.ParkMe" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- These items will automatically switch between light/dark variants -->
+
         <item name="colorPrimary">@color/dark_blue</item>
         <item name="colorPrimaryContainer">@color/Lighter_blue</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -20,7 +19,6 @@
         <item name="colorOnSurface">@color/white</item>
 
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.Material3.SmallComponent</item>
-        <!-- ... other shape appearances ... -->
     </style>
 
     <style name="Theme.ParkMe" parent="Base.Theme.ParkMe"/>
