@@ -138,7 +138,7 @@ public class SignupActivity extends AppCompatActivity {
 
         FirebaseUser firebaseUser = mAuth.getCurrentUser();
         if (firebaseUser != null) {
-            firestore.collection("users").document(firebaseUser.getUid()).set(user)
+            firestore.collection("user").document(firebaseUser.getUid()).set(user)
                     .addOnSuccessListener(aVoid -> showToast("User added to Firestore"))
                     .addOnFailureListener(e -> showToast("Error adding user to Firestore: " + e.getMessage()));
         }

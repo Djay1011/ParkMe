@@ -1,18 +1,21 @@
 package com.example.parkme.norm;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.parkme.ContactUsActivity;
-import com.example.parkme.norm.LoginActivity;
 import com.example.parkme.ProfileActivity;
 import com.example.parkme.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -24,43 +27,46 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
- * A fragment displaying a menu with a variety of options, offering users access to settings and extra features..
+ * Fragment representing the "More" menu in the application, providing users with various settings and options.
  */
 public class MoreFragment extends Fragment {
 
+    private SwitchMaterial notificationSwitch;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment with the "More" options
+        // Inflate the layout for this fragment and initialize UI components.
         View view = inflater.inflate(R.layout.fragment_more, container, false);
-
-        // Setup the UI components and their event listeners
         setUpViewsAndListeners(view);
         return view;
     }
 
     /**
-     * Initializes the views and sets up the event listeners for the UI components.
+     * Initializes the UI components and sets up listeners.
      *
      * @param view The root view of the fragment.
      */
     private void setUpViewsAndListeners(View view) {
-        // Initialize the TextView for displaying the user's name
+        // Initialize and set up the user name display.
         TextView userNameTextView = view.findViewById(R.id.userName);
         fetchAndDisplayUserFirstName(userNameTextView);
 
-        // Setup the switch for toggling dark mode
+        // Initialize and set up the dark mode switch.
         SwitchMaterial darkModeSwitch = view.findViewById(R.id.darkModeSwitch);
         darkModeSwitch.setChecked(AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES);
         darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> toggleDarkMode(isChecked));
 
-        // Initialize click listeners for various options in the fragment
+        // Initialize and set up the notification switch.
+        setupNotificationSwitch(view);
+
+        // Setup click listeners for the profile, vehicle info, payment, contact, and logout options.
         setupClickListeners(view);
     }
 
     /**
-     * Retrieve the first name of the current user from Firestore and display it in the TextView.
+     * Fetches the user's first name from Firebase and displays it.
      *
-     * @param userNameTextView TextView where the user's first name will be displayed.
+     * @param userNameTextView The TextView where the user name is displayed.
      */
     private void fetchAndDisplayUserFirstName(TextView userNameTextView) {
         // Retrieve the existing user from Firebase.
@@ -88,75 +94,77 @@ public class MoreFragment extends Fragment {
     }
 
     /**
-     * Sets up the click listeners for the user interface elements.
+     * Sets up the notification switch to enable/disable notifications.
+     *
      * @param view The root view of the fragment.
      */
-    private void setupClickListeners(View view) {
-        // Listener for the profile view option
-        view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
+    private void setupNotificationSwitch(View view) {
+        notificationSwitch = view.findViewById(R.id.notificationSwitch);
+        notificationSwitch.setChecked(NotificationManagerCompat.from(requireContext()).areNotificationsEnabled());
 
-        // Listener for viewing vehicle information
-        view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
-
-        // Listener for switching to the payment methods view
-        view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
-
-
-        // Listener for contacting support
-        view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
-
-        // Placeholder for logging out the current user
-        view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
+        notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (!NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
+                // If notifications are disabled in system settings, guide the user to enable them.
+                Toast.makeText(getContext(), "Please enable notifications in system settings.", Toast.LENGTH_LONG).show();
+                getContext().startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(Settings.EXTRA_APP_PACKAGE, getContext().getPackageName()));
+            }
+            toggleNotifications(isChecked);
+        });
     }
 
     /**
-     * Begins the process of accessing the user's profile.
+     * Toggles the app notifications based on the switch state.
+     *
+     * @param enable Indicates whether notifications should be enabled or disabled.
      */
+    private void toggleNotifications(boolean enable) {
+        // Here you should integrate with your notification logic
+        if (enable) {
+            Toast.makeText(getContext(), "Notifications Enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Notifications Disabled", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Sets up click listeners for different layout components like profile, vehicle info, etc.
+     *
+     * @param view The root view of the fragment.
+     */
+    private void setupClickListeners(View view) {
+        view.findViewById(R.id.viewProfile).setOnClickListener(v -> viewProfile());
+        view.findViewById(R.id.VehicleInfoText).setOnClickListener(v -> viewVehicleInfo());
+        view.findViewById(R.id.paymentText).setOnClickListener(v -> viewPaymentMethod());
+        view.findViewById(R.id.contactText).setOnClickListener(v -> contactUs());
+        view.findViewById(R.id.logoutText).setOnClickListener(v -> logOut());
+    }
+
     private void viewProfile() {
         startActivity(new Intent(getActivity(), ProfileActivity.class));
     }
 
-    /**
-     * Switches the app's dark mode on or off.
-     * @param isEnabled Whether dark mode should be enabled.
-     */
     private void toggleDarkMode(boolean isEnabled) {
         AppCompatDelegate.setDefaultNightMode(isEnabled ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
 
-
-    /**
-     * Begins the process of accessing the vehicle's information.
-     */
     private void viewVehicleInfo() {
         startActivity(new Intent(getActivity(), VehicleInfoActivity.class));
     }
 
-    /**
-     * Switches the current navigation view to the wallet section..
-     */
     private void viewPaymentMethod() {
         ((BottomNavigationView) getActivity().findViewById(R.id.bottom_navigation)).setSelectedItemId(R.id.nav_wallet);
     }
 
-
-    /**
-     * Starts the activity for contacting support.
-     */
     private void contactUs() {
         startActivity(new Intent(getActivity(), ContactUsActivity.class));
     }
 
-    /**
-     * Ends the session for the current user and takes them back to the login page.
-     */
     private void logOut() {
         FirebaseAuth.getInstance().signOut();
         Intent intent = new Intent(getActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-
-        // Close the current activity
         if (getActivity() != null) {
             getActivity().finish();
         }
