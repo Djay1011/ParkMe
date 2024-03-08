@@ -53,8 +53,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Activity for Completing and finalizing the reservation for parking.
- * It collects information such as the date, time, and payment method before finalizing the booking.
+ * Activity to handle the booking process, allowing the user to input their preferred date,
+ * start time, end time, and confirm their vehicle and payment method before finalizing the booking.
  */
 public class BookingProcessActivity extends AppCompatActivity {
     // UI elements for inputting and displaying booking information.
@@ -62,6 +62,8 @@ public class BookingProcessActivity extends AppCompatActivity {
     private TextView vatFeeValueTextView, serviceFeeValueTextView, totalPriceTextView;
     private TextView vehicleDetails, parkingSpaceName, currentPaymentMethod, errorTextView;
     private MaterialButton bookButton;
+
+    // Variables to store parking spot details, user's selected payment method, and Firestore reference.
     private CardDetails currentCard;
     private FirebaseFirestore firestore;
     private ParkingSpot parkingSpot;
@@ -186,6 +188,9 @@ public class BookingProcessActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Shows a DatePicker dialog for selecting the booking date.
+     */
     private void showDatePickerDialog() {
         // Get current date
         final Calendar calendar = Calendar.getInstance();
@@ -207,6 +212,10 @@ public class BookingProcessActivity extends AppCompatActivity {
 
         datePickerDialog.show();
     }
+
+    /**
+     * Shows a TimePicker dialog for selecting the booking's start time.
+     */
 
     private void showStartTimePickerDialog() {
         // Get current time
@@ -664,6 +673,4 @@ public class BookingProcessActivity extends AppCompatActivity {
 
         notificationManager.notify(0, builder.build());
     }
-
-
 }
