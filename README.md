@@ -1,4 +1,4 @@
-ParkMe: Your Intelligent Parking Space Finder
+ParkMe: Parking Space Finder
 
 
 Overview
@@ -9,7 +9,7 @@ Key Features
 
 Real-Time Parking Availability: Harnessing Firebase's real-time database, get instant updates on available parking spots in your desired area.
 
-Firebase Authentication: Sign in seamlessly with our secure and robust authentication system, supporting email/password, social media login, and more.
+Firebase Authentication: Sign in seamlessly with our secure and robust authentication system, supporting email/password, and more.
 
 Easy Reservation System: Book your parking space in advance with just a few taps. Firebase ensures your reservation details are stored and synchronized in real-time.
 
