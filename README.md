@@ -1,13 +1,18 @@
 # ParkMe
 
 ## Overview
-ParkMe is an Android application designed to simplify parking management. It offers features such as user authentication with email/password and biometric login, password reset, and seamless navigation.
+ParkMe is an Android app that helps users find and manage parking spots. It integrates Google Maps and Places APIs to offer search functionality, view parking spots, and apply filters (disabled access, CCTV, and electric charging availability). It also features interactive markers on the map, allowing users to explore parking spot details, book parking, and view additional amenities.
 
 ## Features
-- User authentication via Firebase
-- Biometric login support
-- Password reset functionality
-- User-friendly interface
+Google Maps integration for displaying parking spots
+
+Search and filter parking spots based on amenities
+
+Interactive markers for parking details
+
+Booking process for selected spots
+
+Biometric authentication for user login (via Firebase)
 
 ## Installation
 1. Clone the repository:
