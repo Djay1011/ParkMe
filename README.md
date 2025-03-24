@@ -1,18 +1,50 @@
-ParkMe: Parking Space Finder
+# ParkMe
 
+## Overview
+ParkMe is an Android application designed to simplify parking management. It offers features such as user authentication with email/password and biometric login, password reset, and seamless navigation.
 
-Overview
+## Features
+- User authentication via Firebase
+- Biometric login support
+- Password reset functionality
+- User-friendly interface
 
-ParkMe is a cutting-edge mobile application designed to streamline your parking experience. Utilizing the power of Firebase, ParkMe offers real-time data synchronization, secure authentication, and reliable data storage, ensuring a seamless and efficient process for finding and reserving parking spaces in busy urban environments. Say goodbye to the hassles of urban parking and embrace a smarter way to park.
+## Installation
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/Djay1011/ParkMe.git
+   ```
+2. Open the project in Android Studio.
+3. Ensure you have Firebase configured correctly.
+4. Build and run the app on an emulator or a physical device.
 
-Key Features
+## Usage
+- **Sign Up/Login**: Users can register or log in using their credentials.
+- **Biometric Login**: If enabled, users can log in using fingerprint authentication.
+- **Password Reset**: Users can request a password reset via email.
+- **Navigation**: Successfully authenticated users are redirected to the main application.
 
-Real-Time Parking Availability: Harnessing Firebase's real-time database, get instant updates on available parking spots in your desired area.
+## Tech Stack
+- **Android (Java)**
+- **Firebase Authentication**
+- **Biometric API**
 
-Firebase Authentication: Sign in seamlessly with our secure and robust authentication system, supporting email/password, and more.
+## Contributing
+1. Fork the repository.
+2. Create a new branch:
+   ```sh
+   git checkout -b feature-branch
+   ```
+3. Commit your changes:
+   ```sh
+   git commit -m "Add new feature"
+   ```
+4. Push to the branch:
+   ```sh
+   git push origin feature-branch
+   ```
+5. Open a Pull Request.
 
-Easy Reservation System: Book your parking space in advance with just a few taps. Firebase ensures your reservation details are stored and synchronized in real-time.
+## License
+This project is licensed under the MIT License. Feel free to use and modify it!
 
-Interactive Maps: Navigate through detailed maps integrated with Firebase to show live data on parking locations, availability, rates, and operating hours.
-
-Instant Payments: Complete transactions smoothly with Firebase’s secure backend, supporting various payment options for your convenience.
